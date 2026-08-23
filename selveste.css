@@ -41,9 +41,9 @@
   --drawerColor:               rgba(0,0,0,.94);
 
   /* ── Borders ── */
-  --borderColor:               hsl(0,100%,12%);      /* #3d0000 */
-  --darkerBorderColor:         hsl(0,100%,8%);       /* #290000 */
-  --lighterBorderColor:        rgba(var(--accentRgb),.28);
+  --borderColor:               hsl(0,0%,18%);        /* neutral dark divider */
+  --darkerBorderColor:         hsl(0,0%,12%);        /* neutral, near-black */
+  --lighterBorderColor:        rgba(255,255,255,.18); /* neutral subtle */
 
   /* ── Selectors ── */
   --selectorBackgroundColor:      rgb(30,0,0);
@@ -315,10 +315,8 @@ h2.sectionTitle::after,
   width:max(160%, 140px) !important;
   height:1.5px !important;
   background:linear-gradient(90deg,
-    rgba(var(--accentRgb),1) 0%,
-    rgba(var(--accentRgb),.85) 18%,
-    rgba(var(--accentRgb),.50) 48%,
-    rgba(150,0,0,.18) 74%,
+    rgba(255,255,255,.40) 0%,
+    rgba(255,255,255,.15) 45%,
     transparent 100%
   ) !important;
   pointer-events:none !important;
@@ -327,7 +325,7 @@ h2.sectionTitle::after,
 .am-stw { display:inline-block; position:relative; margin-bottom:14px; }
 .am-stw-line {
   display:block; height:1.5px; width:220px; max-width:none; margin-top:5px;
-  background:linear-gradient(90deg,var(--accent) 0%,rgba(var(--accentRgb),.55) 42%,rgba(var(--accentRgb),.12) 70%,transparent 90%);
+  background:linear-gradient(90deg,rgba(255,255,255,.40) 0%,rgba(255,255,255,.12) 45%,transparent 90%);
 }
 
 /* ============================================================
@@ -363,8 +361,8 @@ h2.sectionTitle::after,
 .sectionTitleTextButton:hover h2.sectionTitle,
 .sectionTitleButton:hover .sectionTitle,
 .sectionTitleButton:hover h2.sectionTitle {
-  color: #ff1111 !important;
-  animation: titleRedPulse 1s ease-in-out infinite !important;
+  color: #fff !important;
+  animation: none !important;
   -webkit-text-fill-color: unset !important;
 }
 .sectionTitleTextButton:hover .material-icons,
@@ -373,13 +371,13 @@ h2.sectionTitle::after,
 .sectionTitleButton:hover i.md-icon,
 .sectionTitleTextButton:hover span[class*="icon"],
 .sectionTitleButton:hover span[class*="icon"] {
-  color: #ff1111 !important;
-  text-shadow: 0 0 14px rgba(255,0,0,.7), 0 0 28px rgba(255,0,0,.3) !important;
+  color: #fff !important;
+  text-shadow: none !important;
   animation: arrowBounceRight 0.8s ease-in-out infinite !important;
 }
 .sectionTitleTextButton:hover svg,
 .sectionTitleButton:hover svg {
-  fill: #ff1111 !important;
+  fill: #fff !important;
   animation: arrowBounceRight 0.8s ease-in-out infinite !important;
 }
 .sectionTitleTextButton:hover .sectionTitle::after,
@@ -441,7 +439,7 @@ h2.sectionTitle::after,
    ──────────────────────────────────────────────────────────── */
 .card:focus .cardBox.visualCardBox,
 .card:focus .cardBox:not(.visualCardBox) .cardScalable {
-  border-color: var(--activeColor) !important;
+  border-color: rgba(255,255,255,.7) !important;
 }
 
 .mdl-radio__focus-circle,
@@ -562,7 +560,8 @@ h2.sectionTitle::after,
 /* ── Hover effects ── */
 .card-hoverable:hover .cardScalable,
 .card-hoverable:hover .visualCardBox {
-  border-color: var(--activeColor) !important;
+  border-color: rgba(255,255,255,.5) !important;
+  box-shadow: 0 .4em 1em rgba(0,0,0,.7) !important;
 }
 
 .card-hoverable:hover .visualCardBox .cardScalable {
@@ -3450,8 +3449,8 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 
 .nowPlayingBar-button:hover,
 .mediaBarButton:hover {
-  color: var(--accentBright) !important;
-  text-shadow: 0 0 8px rgba(255,0,0,.5) !important;
+  color: #fff !important;
+  text-shadow: none !important;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -3489,7 +3488,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
   position: absolute !important;
   inset: 0 !important;
   transform: translateY(-105%) !important;
-  background: linear-gradient(0deg, transparent, rgba(255,40,40,.9) 40%, rgba(255,255,255,.95) 50%, rgba(255,40,40,.9) 60%, transparent) !important;
+  background: none !important;
   pointer-events: none !important;
   opacity: 0.8;
   z-index: 1;
@@ -3501,7 +3500,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 .backdropCard.card-hoverable .cardOverlayContainer::after,
 .overflowBackdropCard.card-hoverable .cardOverlayContainer::after {
   transform: translateX(-105%) translateY(0) !important;
-  background: linear-gradient(90deg, transparent, rgba(255,40,40,.9) 40%, rgba(255,255,255,.95) 50%, rgba(255,40,40,.9) 60%, transparent) !important;
+  background: none !important;
 }
 .backdropCard.card-hoverable:hover .cardOverlayContainer::after,
 .overflowBackdropCard.card-hoverable:hover .cardOverlayContainer::after {
@@ -3509,7 +3508,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
   opacity: 0 !important;
 }
 .card-hoverable:hover .cardOverlayContainer {
-  background: rgba(var(--accentRgb),.08) !important;
+  background: transparent !important;
 }
 
 /* 2. TEXT HOVER (white → red smooth animation) – stronger */
@@ -3523,8 +3522,8 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 .card-hoverable:hover .cardText-secondary,
 .card-hoverable:hover .cardTextCentered,
 .card-hoverable:hover .cardFooter {
-  color: #ff3333 !important;
-  text-shadow: 0 0 8px rgba(255,0,0,.3) !important;
+  color: #fff !important;
+  text-shadow: none !important;
 }
 
 /* Also for list items and other text */
@@ -3537,7 +3536,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 .headerButton:hover,
 .paper-icon-button-light:hover,
 .button-link:hover {
-  color: #ff3333 !important;
+  color: #fff !important;
   transition: color .18s ease !important;
 }
 
