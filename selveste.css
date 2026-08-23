@@ -43,38 +43,38 @@
   /* ── Borders ── */
   --borderColor:               hsl(0,100%,12%);      /* #3d0000 */
   --darkerBorderColor:         hsl(0,100%,8%);       /* #290000 */
-  --lighterBorderColor:        rgba(204,0,0,.28);
+  --lighterBorderColor:        rgba(var(--accentRgb),.28);
 
   /* ── Selectors ── */
   --selectorBackgroundColor:      rgb(30,0,0);
   --selectorBackgroundColorAlpha: rgba(30,0,0,.55);
 
   /* ── Accent / Active ── */
-  --activeColorAlpha:  rgba(204,0,0,.88);
-  --activeColor:       rgb(204,0,0);
+  --activeColorAlpha:  rgba(var(--accentRgb),.88);
+  --activeColor:       rgb(var(--accentRgb));
 
   /* ── OSD ── */
   --osdSeekBarPlayedColor:         var(--activeColor);
-  --osdSeekBarBufferedColorAlpha:  rgba(180,0,0,.25);
-  --osdSeekBarThumbColor:          #cc0000;
+  --osdSeekBarBufferedColorAlpha:  rgba(var(--accentRgb),.25);
+  --osdSeekBarThumbColor:          var(--accent);
 
   /* ── Table ── */
   --tableBodyColor: rgb(10,0,0);
 
   /* ── UI Accent ── */
-  --uiAccentColor: rgb(204,0,0);
+  --uiAccentColor: rgb(var(--accentRgb));
 
   /* ── Action buttons ── */
-  --btnMiniPlayColor:       rgb(180,0,0);            /* RED play button */
-  --btnMiniPlayBorderColor: rgba(255,70,70,.65);
+  --btnMiniPlayColor:       rgb(var(--accentRgb));            /* RED play button */
+  --btnMiniPlayBorderColor: rgba(var(--accentBrightRgb),.65);
   --btnDeleteColor:         rgb(169,29,29);
   --btnDeleteBorderColor:   rgb(217,84,84);
-  --btnSubmitColor:         rgb(180,0,0);
-  --btnSubmitBorderColor:   rgb(255,26,26);
+  --btnSubmitColor:         rgb(var(--accentRgb));
+  --btnSubmitBorderColor:   rgb(var(--accentBrightRgb));
 
   /* ── Form / checkbox ── */
-  --checkboxCheckedBgColor: rgb(204,0,0);
-  --highlightOutlineColor:  rgb(204,0,0);
+  --checkboxCheckedBgColor: rgb(var(--accentRgb));
+  --highlightOutlineColor:  rgb(var(--accentRgb));
 
   /* ── Defaults assembled ── */
   --defaultBorder:        var(--borderWidth) solid var(--borderColor);
@@ -99,8 +99,8 @@
   --bottomOSDGradient:  linear-gradient(0deg,  hsla(0,0%,0%,.85), 45%, hsla(0,0%,0%,0));
 
   /* Hover shimmer — red tint instead of white */
-  --hoverGradientV: linear-gradient(0deg,   transparent, rgba(204,0,0,.18) 45%, rgba(204,0,0,.18) 55%, transparent);
-  --hoverGradientH: linear-gradient(90deg,  transparent, rgba(204,0,0,.18) 45%, rgba(204,0,0,.18) 55%, transparent);
+  --hoverGradientV: linear-gradient(0deg,   transparent, rgba(var(--accentRgb),.18) 45%, rgba(var(--accentRgb),.18) 55%, transparent);
+  --hoverGradientH: linear-gradient(90deg,  transparent, rgba(var(--accentRgb),.18) 45%, rgba(var(--accentRgb),.18) 55%, transparent);
 
   --itemBackdropMask: linear-gradient(180deg, rgba(0,0,0,.8), 75%, transparent);
 
@@ -132,7 +132,7 @@
   --headerBlurLayerVisibility:  "";
   --headerBackground:           var(--headerColorGradient);
   --loginPageBgUrl:             url("");
-  --loginPageText:              "Sign in to continue";
+  --loginPageText:              "SG Media — Sign in to continue";
   /* Custom brand logo (replaces the default Jellyfin logo). White fill. */
   --brandLogoUrl:               url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 371 241"><path fill="%23fff" d="M0.5 182.336V237.336C109.346 240.949 180.151 249.594 188 184.836C190.94 199.344 191.127 207.858 186.5 224.336C202.669 242.673 234.664 236.93 304.5 237.836V210.836L325.5 237.836H370V147.336C363.88 117.928 354.423 107.46 325.5 100.836H231V159.336H273V138.836H304.5C325.002 156.33 326.887 165.901 304.5 182.336H231C207.682 174.884 199.976 164.486 191.5 139.836C190.131 119.268 184.598 110.242 162 100.836H70C56.2293 85.5747 51.7656 76.656 70 57.8364L138 56.8364L110.5 1.33641C41.5736 -2.98907 16.7607 8.53669 1 57.8364C0.914917 118.344 20.4474 130.928 70 137.336L122.5 138.836C143.383 156.361 142.632 165.866 122.5 182.336H0.5Z"/><path fill="%23fff" d="M139.5 83.3364H197C205.481 67.8198 212.324 61.9084 229 57.3364H320.5L292 0.836411L221.5 1.33641C169.023 13.7882 154.445 34.9723 139.5 83.3364Z"/></svg>');
   --brandLogoWidth:             62px;
@@ -315,9 +315,9 @@ h2.sectionTitle::after,
   width:max(160%, 140px) !important;
   height:1.5px !important;
   background:linear-gradient(90deg,
-    rgba(220,0,0,1) 0%,
-    rgba(204,0,0,.85) 18%,
-    rgba(180,0,0,.50) 48%,
+    rgba(var(--accentRgb),1) 0%,
+    rgba(var(--accentRgb),.85) 18%,
+    rgba(var(--accentRgb),.50) 48%,
     rgba(150,0,0,.18) 74%,
     transparent 100%
   ) !important;
@@ -327,7 +327,7 @@ h2.sectionTitle::after,
 .am-stw { display:inline-block; position:relative; margin-bottom:14px; }
 .am-stw-line {
   display:block; height:1.5px; width:220px; max-width:none; margin-top:5px;
-  background:linear-gradient(90deg,#e50914 0%,rgba(229,9,20,.55) 42%,rgba(229,9,20,.12) 70%,transparent 90%);
+  background:linear-gradient(90deg,var(--accent) 0%,rgba(var(--accentRgb),.55) 42%,rgba(var(--accentRgb),.12) 70%,transparent 90%);
 }
 
 /* ============================================================
@@ -544,7 +544,7 @@ h2.sectionTitle::after,
 }
 
 .card.squareCard[data-type="TvChannel"] .cardImageContainer.cardContent {
-  background-color: rgba(204,0,0,.12);
+  background-color: rgba(var(--accentRgb),.12);
 }
 
 .cardImageContainer > .cardDefaultText {
@@ -594,7 +594,7 @@ h2.sectionTitle::after,
 /* ── Overlay shimmer (red tint) ── */
 .cardOverlayContainer {
   transition: .5s;
-  background: rgba(204,0,0,.04);
+  background: rgba(var(--accentRgb),.04);
 }
 
 .cardOverlayContainer:after {
@@ -641,9 +641,9 @@ h2.sectionTitle::after,
 .cardOverlayContainer > .cardOverlayFab-primary,
 .listItemImageButton,
 .layout-mobile .cardOverlayButton-br:not([data-action="menu"]) > .cardOverlayButtonIcon {
-  background-color: rgb(180,0,0) !important; /* RED background */
+  background-color: rgb(var(--accentRgb)) !important; /* RED background */
   color: white !important;
-  border: .06em solid rgba(255,70,70,.55) !important;
+  border: .06em solid rgba(var(--accentBrightRgb),.55) !important;
   font-size: 75%;
   box-shadow: 0 0 10px rgba(210,0,0,.32) !important;
   z-index: 2;
@@ -652,7 +652,7 @@ h2.sectionTitle::after,
 
 .cardOverlayContainer > .cardOverlayFab-primary:hover,
 .listItemImageButton:hover {
-  background-color: rgb(220,0,0) !important;
+  background-color: rgb(var(--accentRgb)) !important;
   box-shadow: 0 0 14px rgba(255,0,0,.42) !important;
 }
 
@@ -1054,7 +1054,7 @@ h2.sectionTitle::after,
 
 /* Star rating → red gradient */
 .starIcon {
-  background: linear-gradient(to right, #cc0000, #ff4444);
+  background: linear-gradient(to right, var(--accent), var(--accentBright));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-left: -.125em;
@@ -1630,10 +1630,10 @@ progress + span { color: var(--uiAccentColor) !important; }
 }
 .navMenuOption:hover:not(.navMenuOption-selected) {
   background: rgba(210,0,0,.12) !important;
-  color: #ff4444 !important;
+  color: var(--accentBright) !important;
 }
 .navMenuOption:hover .material-icons {
-  color: #ff4444 !important;
+  color: var(--accentBright) !important;
 }
 
 /* ── Header save button ── */
@@ -2048,12 +2048,12 @@ div[data-type="PhotoAlbum"].play_arrow:before { content: "\e8eb"; }
 
 .layout-desktop .detailButton:not(.btnPlay):hover {
   color: var(--activeColor);
-  background: rgba(204,0,0,.12);
+  background: rgba(var(--accentRgb),.12);
 }
 
 .detailButton:active {
   color: var(--activeColor);
-  background: rgba(204,0,0,.18);
+  background: rgba(var(--accentRgb),.18);
 }
 
 /* Play button — red background, white text */
@@ -2215,7 +2215,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 }
 
 .listItem[data-type="Audio"]:has(.playlistIndexIndicatorImage):not(:hover) {
-  background-color: rgba(204,0,0,.06);
+  background-color: rgba(var(--accentRgb),.06);
 }
 
 .listItem-largeImage .listItemBodyText:not(.secondary) {
@@ -2255,7 +2255,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 
 .listItem:focus  { background: var(--highlightOutlineColor); }
 .listItem:active,
-.navMenuOption:active { background: rgba(204,0,0,.12); }
+.navMenuOption:active { background: rgba(var(--accentRgb),.12); }
 
 .listItem-border { border-color: transparent !important; }
 .listItem-border.emby-button.show-focus:focus { border-radius: var(--smallRadius); }
@@ -2273,7 +2273,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 /* ────────────────────────────────────────────────────────────
    ACTION SHEET / CONTEXT MENU
    ──────────────────────────────────────────────────────────── */
-.actionsheetDivider      { height: 2px; background: rgba(204,0,0,.08); }
+.actionsheetDivider      { height: 2px; background: rgba(var(--accentRgb),.08); }
 .actionsheet-xlargeFont  { line-height: normal; }
 .actionSheetContent      { padding: .4em !important; }
 .actionSheetContent > h1 { font-size: unset; }
@@ -2288,7 +2288,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 .actionSheetMenuItem:has(.listItemIcon.check) .listItemIcon.check { display: none; }
 
 .actionSheetMenuItem:has(.listItemIcon.check[style*="hidden"]) { background-color: transparent; }
-.actionSheetMenuItem:has(.listItemIcon.check[style*="hidden"]):active { background-color: rgba(204,0,0,.12); }
+.actionSheetMenuItem:has(.listItemIcon.check[style*="hidden"]):active { background-color: rgba(var(--accentRgb),.12); }
 
 /* ── Nav menu options ── */
 .navMenuOption {
@@ -2576,7 +2576,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 .introSkipperButton,
 .skipIntroButton {
   background-color: rgba(0,0,0,.88);
-  box-shadow: 0 0 8px rgba(204,0,0,.4);
+  box-shadow: 0 0 8px rgba(var(--accentRgb),.4);
   margin-right: var(--sidePadding);
   color: white;
   border: 1px solid var(--activeColor);
@@ -2600,12 +2600,12 @@ div[data-role="controlgroup"] a.ui-btn-active {
 .introSkipperButton:hover {
   background-color: var(--activeColor);
   color: white;
-  box-shadow: 0 0 16px rgba(204,0,0,.6);
+  box-shadow: 0 0 16px rgba(var(--accentRgb),.6);
 }
 
 .skip-button:active,
 #introSkipperButton:active {
-  background-color: rgba(180,0,0,.7);
+  background-color: rgba(var(--accentRgb),.7);
   box-shadow: none;
 }
 
@@ -2624,11 +2624,11 @@ div[data-role="controlgroup"] a.ui-btn-active {
 @media (hover: hover) and (pointer: fine) {
   .paper-icon-button-light:hover:not(:disabled) {
     color: #fff;
-    background-color: rgba(204,0,0,.08);
+    background-color: rgba(var(--accentRgb),.08);
   }
 
   .actionSheetMenuItem.emby-button:has(.listItemIcon.material-icons.check[style*="hidden"]):hover {
-    background-color: rgba(204,0,0,.1);
+    background-color: rgba(var(--accentRgb),.1);
   }
 
   .emby-select-withcolor:hover:not(.emby-select[disabled], :focus),
@@ -2642,17 +2642,17 @@ div[data-role="controlgroup"] a.ui-btn-active {
     border-width: var(--borderWidthDouble);
   }
 
-  .button-flat:hover        { background-color: rgba(204,0,0,.15); color: white; }
+  .button-flat:hover        { background-color: rgba(var(--accentRgb),.15); color: white; }
   .btnPlay.detailButton:hover { background-color: #ff1a1a; color: white; }
   .alphaPickerButton:hover  { color: rgba(255,255,255,1); }
 
   .listItem:hover {
-    background: rgba(204,0,0,.07);
+    background: rgba(var(--accentRgb),.07);
     backdrop-filter: var(--blurLargest);
-    color: #ff4444;
+    color: var(--accentBright);
   }
 
-  .navMenuOption:hover { background: rgba(204,0,0,.1); color: #ff4444; }
+  .navMenuOption:hover { background: rgba(var(--accentRgb),.1); color: var(--accentBright); }
 
   .searchfields-icon:hover,
   .inputContainer .emby-input-iconbutton:hover { color: rgba(255,255,255,.8); }
@@ -2665,7 +2665,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 
 .paper-icon-button-light:active:not(:disabled) {
   color: #fff;
-  background-color: rgba(204,0,0,.08);
+  background-color: rgba(var(--accentRgb),.08);
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -2805,7 +2805,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 }
 
 .guideProgramName {
-  background-color: rgba(204,0,0,.05);
+  background-color: rgba(var(--accentRgb),.05);
   height: calc(100% - .7em);
   margin: .35em 0 .35em .7em;
   border-radius: var(--smallerRadius);
@@ -2813,7 +2813,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 
 .guide-programNameCaret { display: none; }
 
-.programCell-active .guideProgramName { background-color: rgba(204,0,0,.12); }
+.programCell-active .guideProgramName { background-color: rgba(var(--accentRgb),.12); }
 
 .guideVerticalScroller { padding: 0; }
 
@@ -2824,7 +2824,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
 }
 
 .guide-channelHeaderCell {
-  background-color: rgba(204,0,0,.08);
+  background-color: rgba(var(--accentRgb),.08);
   margin: .35em .7em .7em .7em;
   width: auto;
   height: calc(4.42em - .7em);
@@ -2958,7 +2958,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
   box-sizing: border-box;
   transform: translateY(3em);
   border: 1px solid var(--borderColor);
-  box-shadow: 0 0 40px rgba(204,0,0,.12);
+  box-shadow: 0 0 40px rgba(var(--accentRgb),.12);
 }
 
 .manualLoginForm .sectionTitle,
@@ -3262,8 +3262,8 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 }
 
 .sectionTabs .emby-tab-button:hover:not(.emby-tab-button-active) {
-  color: #ff4444;
-  background-color: rgba(204,0,0,.12);
+  color: var(--accentBright);
+  background-color: rgba(var(--accentRgb),.12);
 }
 
 /* Library page padding */
@@ -3400,7 +3400,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 
 .detail-button:hover,
 .favorite-button:hover {
-  background: rgba(204,0,0,.15);
+  background: rgba(var(--accentRgb),.15);
   color: var(--activeColor);
 }
 
@@ -3428,7 +3428,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 }
 
 .mdblistRatingItem:hover,
-.ratingItem:hover { color: #ff4444 !important; }
+.ratingItem:hover { color: var(--accentBright) !important; }
 
 /* ────────────────────────────────────────────────────────────
    NOW PLAYING / MEDIA BAR PLUGIN
@@ -3450,7 +3450,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 
 .nowPlayingBar-button:hover,
 .mediaBarButton:hover {
-  color: #ff4444 !important;
+  color: var(--accentBright) !important;
   text-shadow: 0 0 8px rgba(255,0,0,.5) !important;
 }
 
@@ -3470,8 +3470,8 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 /* ────────────────────────────────────────────────────────────
    SELECTION
    ──────────────────────────────────────────────────────────── */
-::selection      { background: rgba(204,0,0,.4); color: white; }
-::-moz-selection { background: rgba(204,0,0,.4); color: white; }
+::selection      { background: rgba(var(--accentRgb),.4); color: white; }
+::-moz-selection { background: rgba(var(--accentRgb),.4); color: white; }
 
 /* =========================================================
    FIXES – Card wave, text hover, play button, sidebar
@@ -3509,7 +3509,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
   opacity: 0 !important;
 }
 .card-hoverable:hover .cardOverlayContainer {
-  background: rgba(220,0,0,.08) !important;
+  background: rgba(var(--accentRgb),.08) !important;
 }
 
 /* 2. TEXT HOVER (white → red smooth animation) – stronger */
@@ -3545,13 +3545,13 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
 .cardOverlayContainer > .cardOverlayFab-primary,
 .listItemImageButton,
 .layout-mobile .cardOverlayButton-br:not([data-action="menu"]) > .cardOverlayButtonIcon {
-  background-color: rgb(180,0,0) !important;
+  background-color: rgb(var(--accentRgb)) !important;
   color: white !important;
-  border-color: rgba(255,70,70,.55) !important;
+  border-color: rgba(var(--accentBrightRgb),.55) !important;
 }
 .cardOverlayContainer > .cardOverlayFab-primary:hover,
 .listItemImageButton:hover {
-  background-color: rgb(220,0,0) !important;
+  background-color: rgb(var(--accentRgb)) !important;
 }
 
 /* ================= MOBILE TOUCH FIX ================= */
