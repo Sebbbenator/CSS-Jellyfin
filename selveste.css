@@ -5,7 +5,7 @@
    Plugins: Should work with all plugins
    ============================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Share+Tech+Mono&display=swap");
 
 /* ── MATERIAL ICONS ── */
 @font-face {
@@ -28,6 +28,10 @@
   --accentRgb:       229, 9, 20;     /* same value, for rgba() usage */
   --accentBright:    #ff4d57;        /* lighter tint: glows, hover text */
   --accentBrightRgb: 255, 77, 87;    /* same value, for rgba() usage */
+
+  /* ── Fonts (single source of truth) ── */
+  --fontHeading:     "Poppins", "Segoe UI", sans-serif;  /* soft, rounded */
+  --fontBody:        "Inter", "Segoe UI", sans-serif;     /* clean, legible */
 
   /* ── Backgrounds ── */
   --darkerGradientPoint:       #000000;
@@ -85,7 +89,8 @@
   --dimTextColor: rgb(160,160,160);
 
   /* ── Gradients ── */
-  --backgroundGradient:     linear-gradient(0deg, var(--darkerGradientPoint) 35%, var(--lighterGradientPoint));
+  /* Charcoal radial with a soft vignette — depth without colour */
+  --backgroundGradient:     radial-gradient(125% 115% at 50% 0%, #1e1e1e 0%, #131313 45%, #080808 100%);
   --cardBackgroundGradient: linear-gradient(0deg, var(--darkerGradientPoint), 25%, var(--lighterGradientPoint));
 
   /* Header fade: slow black gradient (the ElegantFin fade, now black) */
@@ -157,10 +162,10 @@
 }
 
 /* ────────────────────────────────────────────────────────────
-   BASE HTML / BODY (Rajdhani as primary font)
+   BASE HTML / BODY (Inter as primary font)
    ──────────────────────────────────────────────────────────── */
 html {
-  font-family: "Rajdhani", "Segoe UI", sans-serif;
+  font-family: var(--fontBody), "Segoe UI", sans-serif;
   font-optical-sizing: auto;
   font-weight: 425;
   font-style: normal;
@@ -292,7 +297,7 @@ body {
 .sectionTitle,
 h2.sectionTitle,
 .sectionTitle-cards {
-  font-family:"Orbitron","Rajdhani",sans-serif !important;
+  font-family:var(--fontHeading),var(--fontBody),sans-serif !important;
   letter-spacing:.08em !important;
   font-weight:700 !important;
   text-transform:uppercase !important;
@@ -1012,7 +1017,7 @@ h2.sectionTitle::after,
 .layout-desktop .sectionTitle,
 .layout-tv .sectionTitle {
   font-size: 1.5rem !important;
-  font-family: "Orbitron", monospace !important;
+  font-family: var(--fontHeading), monospace !important;
   font-weight: 500 !important;
   letter-spacing: 1.5px !important;
   color: var(--textColor) !important;
@@ -1311,13 +1316,13 @@ h2.sectionTitle::after,
 }
 
 /* ────────────────────────────────────────────────────────────
-   TYPOGRAPHY (Rajdhani for most text)
+   TYPOGRAPHY (Inter for most text)
    ──────────────────────────────────────────────────────────── */
 h2 { font-size: 1.25em; }
 
 h1, h2 {
   font-weight: 600;
-  font-family: "Orbitron", monospace;
+  font-family: var(--fontHeading), monospace;
 }
 
 .tagline {
@@ -1328,7 +1333,7 @@ h1, h2 {
   color: var(--textColor);
 }
 
-/* Ensure sidebar, home, favourite, show page use Rajdhani */
+/* Ensure sidebar, home, favourite, show page use Inter */
 .navMenuOption,
 .listItemBodyText,
 .cardText,
@@ -1340,7 +1345,7 @@ h1, h2 {
 .pageTitle,
 .sectionTitle,
 h1, h2, h3 {
-  font-family: "Rajdhani", "Segoe UI", sans-serif !important;
+  font-family: var(--fontBody), "Segoe UI", sans-serif !important;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -1579,7 +1584,7 @@ progress + span { color: var(--uiAccentColor) !important; }
 .button-link:active  { color: rgb(243,243,243) !important; text-decoration: none; }
 
 /* ────────────────────────────────────────────────────────────
-   DRAWER / MAIN NAV (Sidebar styling with Rajdhani font)
+   DRAWER / MAIN NAV (Sidebar styling with Inter font)
    ──────────────────────────────────────────────────────────── */
 .mainDrawer,
 .drawer-open {
@@ -1592,7 +1597,7 @@ progress + span { color: var(--uiAccentColor) !important; }
 
 /* Headings (Media, Administration, etc.) */
 .mainDrawer-scrollContainer > h3 {
-  font-family: "Orbitron", sans-serif !important;
+  font-family: var(--fontHeading), sans-serif !important;
   font-size: .7rem !important;
   letter-spacing: 1.5px !important;
   text-transform: uppercase !important;
@@ -1607,7 +1612,7 @@ progress + span { color: var(--uiAccentColor) !important; }
   margin: 0.2em 0.8em !important;
   padding: 0.6em 1em !important;
   color: rgba(255,255,255,.7) !important;
-  font-family: "Rajdhani", sans-serif !important;
+  font-family: var(--fontBody), sans-serif !important;
   font-weight: 500 !important;
   letter-spacing: .03em !important;
   transition: all .15s !important;
@@ -2580,7 +2585,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
   color: white;
   border: 1px solid var(--activeColor);
   border-radius: var(--smallRadius);
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--fontBody), sans-serif;
   font-weight: 600;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -2748,7 +2753,7 @@ div[data-role="controlgroup"] a.ui-btn-active {
   white-space: pre-wrap;
   padding-bottom: .5ch;
   color: white;
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--fontBody), sans-serif;
 }
 
 .nameContainer > h1.itemName,
@@ -2979,7 +2984,7 @@ ul.MuiList-root.MuiMenu-list.MuiList-dense > div:first-child { gap: .5rem; }
   font-weight: 800;
   color: white;
   text-align: center;
-  font-family: "Orbitron", monospace;
+  font-family: var(--fontHeading), monospace;
   letter-spacing: 1px;
 }
 
