@@ -143,8 +143,11 @@ html body #loginPage .readOnlyContent button.raised.emby-button {
 }
 html body #loginPage .readOnlyContent button.raised.emby-button *,
 html body #loginPage .readOnlyContent button.raised.emby-button::before,
-html body #loginPage .readOnlyContent button.raised.emby-button::after {
+html body #loginPage .readOnlyContent button.raised.emby-button::after,
+html body #loginPage .readOnlyContent button.raised.emby-button span::before,
+html body #loginPage .readOnlyContent button.raised.emby-button span::after {
   color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
 }
 html body #loginPage .readOnlyContent button.raised.emby-button:hover {
   background: rgba(var(--primary-r), var(--primary-g), var(--primary-b), .5) !important;
