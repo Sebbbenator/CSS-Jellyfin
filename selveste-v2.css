@@ -201,6 +201,11 @@ html body #loginPage .readOnlyContent button.raised.emby-button:hover {
   background: var(--primary-accent-color) !important;
 }
 
+/* Rækker på detaljesiden (Cast & Crew, Jellyseerr forslag) må ikke gøre siden bredere end skærmen */
+.layout-desktop .emby-scroller:not(.scrollX) {
+  overflow-x: clip;
+}
+
 /* ============================================================
    AFSPILLER: blå tidslinje og runde glasknapper
    ============================================================ */
