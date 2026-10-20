@@ -88,7 +88,10 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
 
 /* ── Baggrund: neutral mørk tone over backdrop ── */
 .backgroundContainer.withBackdrop {
-  background: linear-gradient(180deg, rgba(5, 5, 5, .55) 0%, rgba(5, 5, 5, .92) 45%, #050505 100%) !important;
+  background:
+    radial-gradient(60vw 45vh at 100% 0%, rgba(var(--primary-r), var(--primary-g), var(--primary-b), .22), transparent 70%),
+    radial-gradient(45vw 40vh at 0% 100%, rgba(var(--primary-r), var(--primary-g), var(--primary-b), .12), transparent 70%),
+    linear-gradient(180deg, rgba(5, 5, 5, .55) 0%, rgba(5, 5, 5, .92) 45%, #050505 100%) !important;
   opacity: 1 !important;
 }
 
@@ -130,17 +133,12 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
 /* ============================================================
    AMBIENT LYS: svag blå glød, som lys fra et tv i et mørkt rum
    ============================================================ */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
+.backgroundContainer {
   background:
-    radial-gradient(60vw 45vh at 100% 0%, rgba(var(--primary-r), var(--primary-g), var(--primary-b), .18), transparent 70%),
-    radial-gradient(45vw 40vh at 0% 100%, rgba(var(--primary-r), var(--primary-g), var(--primary-b), .10), transparent 70%);
+    radial-gradient(60vw 45vh at 100% 0%, rgba(var(--primary-r), var(--primary-g), var(--primary-b), .22), transparent 70%),
+    radial-gradient(45vw 40vh at 0% 100%, rgba(var(--primary-r), var(--primary-g), var(--primary-b), .12), transparent 70%),
+    var(--primary-background-color) !important;
 }
-body:has(.videoPlayerContainer:not(.hide))::before { display: none; }
 
 /* ============================================================
    DETALJESIDE: større titellogo og genrer som blå piller
@@ -148,6 +146,8 @@ body:has(.videoPlayerContainer:not(.hide))::before { display: none; }
 .layout-desktop .itemDetailPage .detailLogo {
   height: 38vh !important;
   max-height: 260px;
+  width: min(42vw, 620px) !important;
+  background-position: left bottom !important;
   filter: drop-shadow(0 6px 24px rgba(0, 0, 0, .7));
 }
 .itemDetailPage .detailPagePrimaryContent h1,
