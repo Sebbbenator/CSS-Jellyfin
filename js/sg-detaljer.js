@@ -50,7 +50,8 @@
       const dele = [];
       if (film.length) dele.push(film.length + (film.length === 1 ? ' ny film' : ' nye film'));
       if (serier) dele.push('nye afsnit i ' + serier + (serier === 1 ? ' serie' : ' serier'));
-      under.textContent = dele.length ? dele.join(' og ') + ' denne uge' : 'Klar til en god film?';
+      const tekst = dele.join(' og ') + ' denne uge';
+      under.textContent = dele.length ? tekst.charAt(0).toUpperCase() + tekst.slice(1) : 'Klar til en god film?';
     } catch (e) {
       console.warn('SG hilsen', e);
     } finally {
