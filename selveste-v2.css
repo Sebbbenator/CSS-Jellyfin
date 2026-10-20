@@ -141,7 +141,9 @@ html body #loginPage .readOnlyContent button.raised.emby-button {
   border: 1px solid rgba(255, 255, 255, .12) !important;
   color: #fff !important;
 }
-html body #loginPage .readOnlyContent button.raised.emby-button * {
+html body #loginPage .readOnlyContent button.raised.emby-button *,
+html body #loginPage .readOnlyContent button.raised.emby-button::before,
+html body #loginPage .readOnlyContent button.raised.emby-button::after {
   color: #fff !important;
 }
 html body #loginPage .readOnlyContent button.raised.emby-button:hover {
