@@ -25,7 +25,6 @@ body:has(.videoPlayerContainer:not(.hide))::after { display: none; }
   from { background-position: 0 0; }
   to { background-position: 60px 240px; }
 }
-#loginPage .readOnlyContent::before,
-#loginPage form.manualLoginForm::before {
+#loginPage h1::after {
   content: "God jul fra SG Media 🎄" !important;
 }

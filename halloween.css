@@ -4,12 +4,12 @@
   --primary-g: 117;
   --primary-b: 24;
 }
-body::before {
+.backgroundContainer {
   background:
     radial-gradient(60vw 45vh at 100% 0%, rgba(255, 117, 24, .20), transparent 70%),
-    radial-gradient(45vw 40vh at 0% 100%, rgba(120, 40, 160, .16), transparent 70%) !important;
+    radial-gradient(45vw 40vh at 0% 100%, rgba(120, 40, 160, .16), transparent 70%),
+    var(--primary-background-color) !important;
 }
-#loginPage .readOnlyContent::before,
-#loginPage form.manualLoginForm::before {
+#loginPage h1::after {
   content: "Uhyggelig velkommen til SG Media 🎃" !important;
 }
