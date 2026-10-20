@@ -238,3 +238,136 @@ html body #loginPage .readOnlyContent button.raised.emby-button:hover {
    @import url("https://cdn.jsdelivr.net/gh/Sebbbenator/CSS-Jellyfin@jellyfish-base/jul.css");
    @import url("https://cdn.jsdelivr.net/gh/Sebbbenator/CSS-Jellyfin@jellyfish-base/halloween.css");
    ============================================================ */
+
+/* ============================================================
+   MEDIA BAR: Sebs blå i karrusellen øverst på forsiden
+   ============================================================ */
+#slides-container .dot {
+  transition: width .3s ease, background .3s ease;
+}
+#slides-container .dot.active {
+  background: var(--primary-accent-color) !important;
+  width: 22px !important;
+  border-radius: 99px !important;
+}
+#slides-container .spec-progress {
+  background: var(--primary-accent-color) !important;
+}
+#slides-container .play-button {
+  background: var(--primary-accent-color) !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+}
+#slides-container .play-button * {
+  color: #fff !important;
+}
+#slides-container .gradient-overlay {
+  background:
+    linear-gradient(130deg, rgba(5, 5, 5, .78) 10%, rgba(5, 5, 5, .35) 40%, transparent 100%),
+    linear-gradient(to top, var(--primary-background-color) 0%, transparent 28%) !important;
+}
+
+/* ============================================================
+   HILSEN: "Godaften, Seb" (laves af sg-detaljer.js)
+   ============================================================ */
+.sg-hilsen {
+  position: absolute;
+  top: 82px;
+  left: 3.5%;
+  z-index: 5;
+  pointer-events: none;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .8);
+}
+.sg-hilsen-titel {
+  font-family: var(--fontHeading);
+  font-weight: 600;
+  font-size: 1.45rem;
+  color: #fff;
+  padding-left: .6em;
+  border-left: 4px solid var(--primary-accent-color);
+}
+.sg-hilsen-under {
+  margin-top: .25em;
+  padding-left: calc(.6em + 4px);
+  font-size: .9rem;
+  color: rgba(255, 255, 255, .75);
+}
+.sg-hilsen.uden-mediebar {
+  position: static;
+  margin: 1.2em 3.5% .4em;
+}
+
+/* ============================================================
+   KVALITETSMÆRKER: Jellyfin Enhanced tags som mørkt glas
+   ============================================================ */
+.quality-overlay-label {
+  background: rgba(5, 5, 5, .72) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, .14) !important;
+  backdrop-filter: blur(6px);
+  font-family: var(--fontHeading) !important;
+  font-weight: 600 !important;
+  letter-spacing: .03em;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+.quality-overlay-label.resolution {
+  background: rgba(var(--primary-r), var(--primary-g), var(--primary-b), .9) !important;
+  border-color: rgba(255, 255, 255, .2) !important;
+}
+.language-flag {
+  border-radius: 4px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .6);
+}
+
+/* ============================================================
+   NY MÆRKE: kommet til de sidste 7 dage (sg-detaljer.js)
+   ============================================================ */
+.sg-ny {
+  position: absolute;
+  top: .55em;
+  right: .55em;
+  z-index: 4;
+  padding: .2em .6em;
+  border-radius: 99px;
+  background: var(--primary-accent-color);
+  color: #fff;
+  font-family: var(--fontHeading);
+  font-weight: 700;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  box-shadow: 0 0 0 2px rgba(5, 5, 5, .5), 0 4px 14px rgba(var(--primary-r), var(--primary-g), var(--primary-b), .6);
+  pointer-events: none;
+}
+
+/* ============================================================
+   PROFILBILLEDER: runde med blå ring
+   ============================================================ */
+.headerUserButton,
+.headerUserButtonRound,
+.userProfileSettingsPage .itemDetailImage,
+#loginPage .cardImageContainer.coveredImage {
+  border-radius: 50% !important;
+  box-shadow: 0 0 0 2px var(--primary-accent-color), 0 0 14px rgba(var(--primary-r), var(--primary-g), var(--primary-b), .45) !important;
+  transition: box-shadow .25s ease, transform .25s ease;
+}
+.headerUserButton:hover,
+#loginPage .card:hover .cardImageContainer.coveredImage {
+  box-shadow: 0 0 0 3px var(--primary-accent-color), 0 0 24px rgba(var(--primary-r), var(--primary-g), var(--primary-b), .8) !important;
+  transform: scale(1.06);
+}
+
+/* ============================================================
+   SMÅ DETALJER: blå scrollbar og blå markering
+   ============================================================ */
+::selection {
+  background: rgba(var(--primary-r), var(--primary-g), var(--primary-b), .75);
+  color: #fff;
+}
+html {
+  scrollbar-color: rgba(var(--primary-r), var(--primary-g), var(--primary-b), .8) transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--primary-r), var(--primary-g), var(--primary-b), .8) !important;
+  border-radius: 99px !important;
+}
