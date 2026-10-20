@@ -159,6 +159,10 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
   display: flex !important;
   flex-wrap: wrap;
   gap: .45em;
+  font-size: 0;
+}
+.itemDetailPage .detailsGroupItem .focuscontainer-x a {
+  font-size: .9rem;
 }
 .itemDetailPage .detailsGroupItem:last-child a.button-link {
   font-size: .9rem;
