@@ -102,16 +102,19 @@
   // Knap i toppen, der åbner Jellyfin Enhanced's side med anmodninger og downloads
   const KOMMER_SNART = '#/userpluginsettings.html' + String.fromCharCode(63) + 'pageUrl' + String.fromCharCode(61) + '/JellyfinEnhanced/downloadsPage';
   function lavKommerSnart() {
-    const højre = document.querySelector('.headerRight');
-    if (!højre || højre.querySelector('.sg-kommer-snart')) return;
+    if (document.querySelector('.sg-kommer-snart')) return;
+    // Jellyfin 12 bruger MUI headeren; Jellyfin Enhanced har sin egen knap-bakke der
+    const bakke = document.querySelector('#je-native-tabs-group, .je-header-actions-host');
+    const gammel = document.querySelector('.skinHeader .headerRight');
+    const mål = bakke || gammel;
+    if (!mål) return;
     const knap = document.createElement('a');
     knap.className = 'headerButton headerButtonRight paper-icon-button-light sg-kommer-snart';
     knap.href = KOMMER_SNART;
     knap.title = 'Kommer snart';
     knap.setAttribute('aria-label', 'Kommer snart');
     knap.innerHTML = '<span class="material-icons" aria-hidden="true">upcoming</span>';
-    const søg = højre.querySelector('.headerSearchButton');
-    højre.insertBefore(knap, søg || højre.firstChild);
+    mål.appendChild(knap);
   }
 
   function scan() {
