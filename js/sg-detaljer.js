@@ -68,7 +68,15 @@
     const dato = Date.parse(item.Type === 'Series' ? (item.DateLastMediaAdded || item.DateCreated) : item.DateCreated);
     const set = item.UserData && item.UserData.Played;
     const holder = card.querySelector('.cardScalable');
-    if (!holder || holder.querySelector('.sg-ny')) return;
+    if (!holder || holder.querySelector('.sg-ny, .sg-tid')) return;
+    const pos = item.UserData && item.UserData.PlaybackPositionTicks;
+    if (pos && item.RunTimeTicks && !set) {
+      const min = Math.max(1, Math.round((item.RunTimeTicks - pos) / 6e8));
+      const t = document.createElement('div');
+      t.className = 'sg-tid';
+      t.textContent = (min >= 60 ? Math.floor(min / 60) + ' t ' + (min % 60) + ' min' : min + ' min') + ' tilbage';
+      holder.appendChild(t);
+    }
     if (dato > grænse() && !set) {
       const b = document.createElement('div');
       b.className = 'sg-ny';

@@ -336,6 +336,24 @@ html body .je-tag-host .quality-overlay-container .quality-overlay-label.resolut
   pointer-events: none;
 }
 
+/* Tid tilbage på kort, du er i gang med (sg-detaljer.js) */
+.sg-tid {
+  position: absolute;
+  right: .55em;
+  bottom: 1.1em;
+  z-index: 4;
+  padding: .2em .6em;
+  border-radius: 6px;
+  background: rgba(5, 5, 5, .78);
+  border: 1px solid rgba(255, 255, 255, .14);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-family: var(--fontHeading);
+  font-weight: 600;
+  font-size: .72rem;
+  pointer-events: none;
+}
+
 /* ============================================================
    PROFILBILLEDER: runde med blå ring
    ============================================================ */
