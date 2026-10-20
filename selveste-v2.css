@@ -155,9 +155,8 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
   font-weight: 700 !important;
   letter-spacing: -.01em;
 }
-.itemDetailPage .detailsGroupItem:last-child .focuscontainer-x > span {
-  font-size: 0;
-  display: flex;
+.itemDetailPage .detailsGroupItem .focuscontainer-x {
+  display: flex !important;
   flex-wrap: wrap;
   gap: .45em;
 }
@@ -165,8 +164,8 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
   font-size: .9rem;
   padding: .3em .9em !important;
   border-radius: 999px;
-  background: rgba(var(--primary-r), var(--primary-g), var(--primary-b), .22) !important;
-  border: 1px solid rgba(var(--primary-r), var(--primary-g), var(--primary-b), .6);
+  background: rgba(var(--primary-r), var(--primary-g), var(--primary-b), .55) !important;
+  border: 1px solid rgba(var(--primary-r), var(--primary-g), var(--primary-b), .9) !important;
   color: #fff !important;
   text-decoration: none !important;
   transition: background .2s ease;
