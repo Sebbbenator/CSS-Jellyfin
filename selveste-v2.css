@@ -105,7 +105,7 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
   flex-direction: column;
   align-items: center;
   height: auto !important;
-  margin-bottom: 1.2em !important;
+  padding-bottom: 18px !important;
   font-size: 0 !important;
   color: transparent !important;
 }
@@ -139,6 +139,9 @@ html body #loginPage form.manualLoginForm button.raised.button-submit.emby-butto
 html body #loginPage .readOnlyContent button.raised.emby-button {
   background: rgba(255, 255, 255, .08) !important;
   border: 1px solid rgba(255, 255, 255, .12) !important;
+  color: #fff !important;
+}
+html body #loginPage .readOnlyContent button.raised.emby-button * {
   color: #fff !important;
 }
 html body #loginPage .readOnlyContent button.raised.emby-button:hover {
