@@ -271,12 +271,9 @@ html body #loginPage .readOnlyContent button.raised.emby-button:hover {
    HILSEN: "Godaften, Seb" (laves af sg-detaljer.js)
    ============================================================ */
 .sg-hilsen {
-  position: absolute;
-  top: 82px;
-  left: 3.5%;
+  margin: 1.4em 3.5% .2em;
+  position: relative;
   z-index: 5;
-  pointer-events: none;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, .8);
 }
 .sg-hilsen-titel {
   font-family: var(--fontHeading);
@@ -291,10 +288,6 @@ html body #loginPage .readOnlyContent button.raised.emby-button:hover {
   padding-left: calc(.6em + 4px);
   font-size: .9rem;
   color: rgba(255, 255, 255, .75);
-}
-.sg-hilsen.uden-mediebar {
-  position: static;
-  margin: 1.2em 3.5% .4em;
 }
 
 /* ============================================================

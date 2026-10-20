@@ -5,7 +5,7 @@
   if (window.__sgDetaljer) return;
   window.__sgDetaljer = true;
 
-  const NY_DAGE = 7;
+  const NY_DAGE = window.sgNyDage || 7;
   const grænse = () => Date.now() - NY_DAGE * 864e5;
 
   function hilsenTekst() {
@@ -17,12 +17,13 @@
     return 'Godaften';
   }
 
-  async function antalNye(userId, type) {
-    const fra = new Date(grænse()).toISOString();
+  // MinDateCreated filtreres ikke af serveren, så vi tæller selv blandt de nyeste
+  async function nyeSiden(userId, type) {
     const r = await ApiClient.getItems(userId, {
-      Recursive: true, IncludeItemTypes: type, MinDateCreated: fra, Limit: 0
+      Recursive: true, IncludeItemTypes: type, SortBy: 'DateCreated', SortOrder: 'Descending',
+      Fields: 'DateCreated', EnableImages: false, EnableUserData: false, Limit: 400
     });
-    return r.TotalRecordCount || 0;
+    return (r.Items || []).filter(i => Date.parse(i.DateCreated) > grænse());
   }
 
   let hilsenKører = false;
@@ -41,19 +42,14 @@
       under.className = 'sg-hilsen-under';
       el.append(titel, under);
 
-      const bar = side.querySelector('#slides-container');
-      if (bar) {
-        bar.appendChild(el);
-      } else {
-        el.classList.add('uden-mediebar');
-        const sektioner = side.querySelector('.sections, .homeSectionsContainer');
-        (sektioner || side).prepend(el);
-      }
+      const sektioner = side.querySelector('.sections, .homeSectionsContainer');
+      (sektioner || side).prepend(el);
 
-      const [film, afsnit] = await Promise.all([antalNye(bruger.Id, 'Movie'), antalNye(bruger.Id, 'Episode')]);
+      const [film, afsnit] = await Promise.all([nyeSiden(bruger.Id, 'Movie'), nyeSiden(bruger.Id, 'Episode')]);
+      const serier = new Set(afsnit.map(a => a.SeriesId)).size;
       const dele = [];
-      if (film) dele.push(film + (film === 1 ? ' ny film' : ' nye film'));
-      if (afsnit) dele.push(afsnit + (afsnit === 1 ? ' nyt afsnit' : ' nye afsnit'));
+      if (film.length) dele.push(film.length + (film.length === 1 ? ' ny film' : ' nye film'));
+      if (serier) dele.push('nye afsnit i ' + serier + (serier === 1 ? ' serie' : ' serier'));
       under.textContent = dele.length ? dele.join(' og ') + ' denne uge' : 'Klar til en god film?';
     } catch (e) {
       console.warn('SG hilsen', e);
