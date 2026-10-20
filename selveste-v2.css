@@ -158,7 +158,7 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
 .itemDetailPage .detailsGroupItem .focuscontainer-x {
   display: flex !important;
   flex-wrap: wrap;
-  gap: .45em;
+  gap: 7px;
   font-size: 0;
 }
 .itemDetailPage .detailsGroupItem .focuscontainer-x a {
