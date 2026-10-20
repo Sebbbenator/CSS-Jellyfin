@@ -10,9 +10,10 @@
 
 /* ── Tokens: skift her for at ændre hele temaet ── */
 :root {
-  --primary-r: 229;
-  --primary-g: 9;
-  --primary-b: 20;
+  /* Sebs blå: #417195 */
+  --primary-r: 65;
+  --primary-g: 113;
+  --primary-b: 149;
 
   --fontHeading: "Poppins", "Segoe UI", sans-serif;
   --fontBody: "Inter", "Segoe UI", sans-serif;
@@ -35,7 +36,7 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
   font-family: var(--fontHeading) !important;
 }
 
-/* ── Sektionstitler: ren tekst med en rød streg som signatur ── */
+/* ── Sektionstitler: ren tekst med en blå streg som signatur ── */
 .sectionTitle.sectionTitle-cards,
 .verticalSection > .sectionTitleContainer .sectionTitle {
   font-weight: 600 !important;
@@ -63,7 +64,7 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
   border-bottom: 1px solid rgba(255, 255, 255, .06);
 }
 
-/* ── Kort: let løft og en rød kant ved hover ── */
+/* ── Kort: let løft og en blå kant ved hover ── */
 .cardBox .cardScalable {
   transition: transform .25s ease, box-shadow .25s ease;
 }
@@ -76,14 +77,14 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
   }
 }
 
-/* ── Play knapper: rød pille ── */
+/* ── Play knapper: pille ── */
 .btnPlay, .layout-desktop .mainDetailButtons .btnPlay {
   border-radius: 999px !important;
   font-family: var(--fontHeading) !important;
   font-weight: 600 !important;
 }
 
-/* ── Baggrund: neutral mørk tone over backdrop i stedet for rød ── */
+/* ── Baggrund: neutral mørk tone over backdrop ── */
 .backgroundContainer.withBackdrop {
   background: linear-gradient(180deg, rgba(5, 5, 5, .55) 0%, rgba(5, 5, 5, .92) 45%, #050505 100%) !important;
   opacity: 1 !important;
