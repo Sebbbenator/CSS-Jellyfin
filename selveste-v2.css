@@ -353,6 +353,18 @@ html body .je-tag-host .quality-overlay-container .quality-overlay-label.resolut
   transform: scale(1.06);
 }
 
+/* Kommer snart: knappen i toppen og siden med anmodninger */
+.sg-kommer-snart {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #fff !important;
+  text-decoration: none;
+}
+.sg-kommer-snart:hover .material-icons {
+  color: var(--primary-accent-color);
+}
+
 /* ============================================================
    SMÅ DETALJER: blå scrollbar og blå markering
    ============================================================ */
