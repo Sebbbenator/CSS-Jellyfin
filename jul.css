@@ -1,0 +1,31 @@
+/* SG Media · Juletilstand: sne der falder og en varm rød/grøn glød */
+:root {
+  --primary-r: 196;
+  --primary-g: 30;
+  --primary-b: 58;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: -10vh 0 0 0;
+  pointer-events: none;
+  z-index: 9999;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+    radial-gradient(3px 3px at 120px 80px, rgba(255, 255, 255, .9), transparent),
+    radial-gradient(2px 2px at 220px 150px, rgba(255, 255, 255, .7), transparent),
+    radial-gradient(3px 3px at 320px 40px, #fff, transparent),
+    radial-gradient(2px 2px at 60px 200px, rgba(255, 255, 255, .8), transparent);
+  background-size: 360px 240px;
+  animation: sgSne 14s linear infinite;
+  opacity: .55;
+}
+body:has(.videoPlayerContainer:not(.hide))::after { display: none; }
+@keyframes sgSne {
+  from { background-position: 0 0; }
+  to { background-position: 60px 240px; }
+}
+#loginPage .readOnlyContent::before,
+#loginPage form.manualLoginForm::before {
+  content: "God jul fra SG Media 🎄" !important;
+}

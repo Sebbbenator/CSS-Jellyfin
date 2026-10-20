@@ -1,0 +1,15 @@
+/* SG Media · Halloween: græskar-orange accent og en uhyggelig glød */
+:root {
+  --primary-r: 255;
+  --primary-g: 117;
+  --primary-b: 24;
+}
+body::before {
+  background:
+    radial-gradient(60vw 45vh at 100% 0%, rgba(255, 117, 24, .20), transparent 70%),
+    radial-gradient(45vw 40vh at 0% 100%, rgba(120, 40, 160, .16), transparent 70%) !important;
+}
+#loginPage .readOnlyContent::before,
+#loginPage form.manualLoginForm::before {
+  content: "Uhyggelig velkommen til SG Media 🎃" !important;
+}

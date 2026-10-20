@@ -6,6 +6,8 @@
 
 @import url("https://cdn.jsdelivr.net/gh/n00bcodr/jellyfish@main/theme.css");
 @import url("https://cdn.jsdelivr.net/gh/n00bcodr/Jellyfish/colors/jellyflix.css");
+@import url("https://cdn.jsdelivr.net/gh/n00bcodr/jellyfish@main/indicators.css");
+@import url("https://cdn.jsdelivr.net/gh/n00bcodr/jellyfish@main/progress_bar.css");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap");
 
 /* ── Tokens: skift her for at ændre hele temaet ── */
@@ -89,3 +91,124 @@ h1, h2, h3, .sectionTitle, .itemName, .cardText-first {
   background: linear-gradient(180deg, rgba(5, 5, 5, .55) 0%, rgba(5, 5, 5, .92) 45%, #050505 100%) !important;
   opacity: 1 !important;
 }
+
+/* ============================================================
+   LOGINSIDE: stort logo, glasboks og velkomst
+   (baggrundscollagen ligger i Jellyfins Custom CSS felt,
+   fordi billederne kommer fra serveren selv)
+   ============================================================ */
+#loginPage h1,
+#loginPage h1::before {
+  height: 110px !important;
+}
+#loginPage .padded-left.padded-right.padded-bottom-page {
+  background: rgba(5, 5, 5, .55) !important;
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .6), 0 0 120px rgba(var(--primary-r), var(--primary-g), var(--primary-b), .25);
+  backdrop-filter: blur(18px) saturate(140%) !important;
+}
+#loginPage .readOnlyContent::before,
+#loginPage form.manualLoginForm::before {
+  content: "Velkommen til SG Media";
+  display: block;
+  text-align: center;
+  font-family: var(--fontHeading);
+  font-weight: 600;
+  font-size: 1.6em;
+  letter-spacing: .02em;
+  margin-bottom: .3em;
+  color: #fff;
+}
+#loginPage .readOnlyContent::after {
+  content: "Vælg din profil for at komme i gang";
+  display: block;
+  text-align: center;
+  color: rgba(255, 255, 255, .6);
+  margin-top: .8em;
+}
+
+/* ============================================================
+   AMBIENT LYS: svag blå glød, som lys fra et tv i et mørkt rum
+   ============================================================ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(60vw 45vh at 100% 0%, rgba(var(--primary-r), var(--primary-g), var(--primary-b), .18), transparent 70%),
+    radial-gradient(45vw 40vh at 0% 100%, rgba(var(--primary-r), var(--primary-g), var(--primary-b), .10), transparent 70%);
+}
+body:has(.videoPlayerContainer:not(.hide))::before { display: none; }
+
+/* ============================================================
+   DETALJESIDE: større titellogo og genrer som blå piller
+   ============================================================ */
+.layout-desktop .itemDetailPage .detailLogo {
+  height: 38vh !important;
+  max-height: 260px;
+  filter: drop-shadow(0 6px 24px rgba(0, 0, 0, .7));
+}
+.itemDetailPage .detailPagePrimaryContent h1,
+.itemDetailPage .itemName {
+  font-weight: 700 !important;
+  letter-spacing: -.01em;
+}
+.itemDetailPage .detailsGroupItem:last-child .focuscontainer-x > span {
+  font-size: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45em;
+}
+.itemDetailPage .detailsGroupItem:last-child a.button-link {
+  font-size: .9rem;
+  padding: .3em .9em !important;
+  border-radius: 999px;
+  background: rgba(var(--primary-r), var(--primary-g), var(--primary-b), .22) !important;
+  border: 1px solid rgba(var(--primary-r), var(--primary-g), var(--primary-b), .6);
+  color: #fff !important;
+  text-decoration: none !important;
+  transition: background .2s ease;
+}
+.itemDetailPage .detailsGroupItem:last-child a.button-link:hover {
+  background: var(--primary-accent-color) !important;
+}
+
+/* ============================================================
+   AFSPILLER: blå tidslinje og runde glasknapper
+   ============================================================ */
+.videoOsdBottom {
+  background: linear-gradient(0deg, rgba(0, 0, 0, .85) 0%, rgba(0, 0, 0, .4) 70%, transparent 100%) !important;
+  backdrop-filter: none !important;
+}
+.videoOsdBottom .osdControls .paper-icon-button-light,
+.videoOsdBottom .osdControls button.btnPause {
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, .08) !important;
+  backdrop-filter: blur(10px);
+  margin: 0 .15em;
+  transition: background .2s ease, transform .2s ease;
+}
+.videoOsdBottom .osdControls .paper-icon-button-light:hover {
+  background: rgba(var(--primary-r), var(--primary-g), var(--primary-b), .55) !important;
+  transform: scale(1.08);
+}
+.videoOsdBottom .osdControls button.btnPause {
+  background: var(--primary-accent-color) !important;
+}
+.osdPositionSlider::-webkit-slider-thumb,
+.mdl-slider::-webkit-slider-thumb {
+  background: #fff !important;
+  box-shadow: 0 0 0 4px rgba(var(--primary-r), var(--primary-g), var(--primary-b), .45);
+}
+.mdl-slider-background-lower {
+  background: var(--primary-accent-color) !important;
+}
+
+/* ============================================================
+   SÆSONTILSTAND: tilføj én af disse linjer øverst i
+   Jellyfins Custom CSS felt for at tænde den, slet den igen bagefter.
+   @import url("https://cdn.jsdelivr.net/gh/Sebbbenator/CSS-Jellyfin@jellyfish-base/jul.css");
+   @import url("https://cdn.jsdelivr.net/gh/Sebbbenator/CSS-Jellyfin@jellyfish-base/halloween.css");
+   ============================================================ */
