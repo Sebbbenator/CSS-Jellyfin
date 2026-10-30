@@ -1,0 +1,35 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "dk.selveste.launcher"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "dk.selveste.launcher"
+        minSdk 25
+        targetSdk 30
+        versionCode((System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInteger())
+        versionName "1.0." + (System.getenv("GITHUB_RUN_NUMBER") ?: "0")
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            // Ingen nøgle i repoet: hver build signeres med runnerens debug nøgle,
+            // og install.ps1 geninstallerer når signaturen skifter
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}

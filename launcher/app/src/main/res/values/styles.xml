@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="JarvisTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/jarvis_bg</item>
+        <item name="android:colorAccent">@color/jarvis_cyan</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+    <color name="jarvis_bg">#02080D</color>
+    <color name="jarvis_cyan">#4FD8FF</color>
+</resources>

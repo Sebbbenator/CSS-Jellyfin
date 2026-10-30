@@ -1,0 +1,52 @@
+name: Byg Jarvis TV launcher
+
+on:
+  push:
+    paths:
+      - "launcher/**"
+      - ".github/workflows/launcher.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+
+      - name: Byg APK
+        working-directory: launcher
+        run: gradle --no-daemon assembleRelease
+
+      - name: Saml filer
+        run: |
+          mkdir out
+          cp launcher/app/build/outputs/apk/release/app-release.apk out/jarvis-tv.apk
+          cp launcher/install.ps1 launcher/undo.ps1 out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-tv
+          path: out/
+
+      - name: Udgiv som release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="launcher-v${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" out/* \
+            --target "$GITHUB_SHA" \
+            --title "Jarvis TV ${GITHUB_RUN_NUMBER}" \
+            --notes "Bygget fra ${GITHUB_REF_NAME} @ ${GITHUB_SHA::7}" \
+            --latest
