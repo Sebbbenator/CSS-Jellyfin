@@ -54,7 +54,6 @@ if (-not $imgs) { Write-Host '   Ingen billeder fra pc''en (laeg dem op fra tele
 & $adb -s $tv shell appops set $pkg REQUEST_INSTALL_PACKAGES allow | Out-Null
 & $adb -s $tv shell settings put secure screensaver_components "$pkg/$pkg.JarvisDream" | Out-Null
 & $adb -s $tv shell settings put secure screensaver_enabled 1 | Out-Null
-& $adb -s $tv shell am force-stop $pkg | Out-Null
 
 Write-Host '5/5 Home knappen til Jarvis TV' -ForegroundColor Cyan
 $old = "$(& $adb -s $tv shell settings get secure enabled_accessibility_services)".Trim()
