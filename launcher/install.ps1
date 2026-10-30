@@ -16,8 +16,17 @@ Invoke-WebRequest 'https://github.com/sebbbenator/css-jellyfin/releases/latest/d
 Invoke-WebRequest 'https://github.com/sebbbenator/css-jellyfin/releases/latest/download/undo.ps1' -OutFile "$dir\undo.ps1" -UseBasicParsing -ErrorAction Stop
 
 Write-Host '2/5 Forbinder til sticken (godkend paa tv''et hvis den spoerger)' -ForegroundColor Cyan
-& $adb connect $tv | Out-Host
-& $adb -s $tv wait-for-device
+$ok = $false
+for ($i = 0; $i -lt 20; $i++) {
+    $c = & $adb connect $tv 2>&1 | Out-String
+    $state = "$(& $adb -s $tv get-state 2>&1)".Trim()
+    if ($state -eq 'device') { $ok = $true; break }
+    if ($i -eq 0) { Write-Host '   Vaelg "Always allow from this computer" + OK paa tv''et, venter...' -ForegroundColor Yellow }
+    & $adb disconnect $tv 2>&1 | Out-Null
+    Start-Sleep -Seconds 3
+}
+if (-not $ok) { throw 'Kunne ikke forbinde. Tjek at ADB debugging er slaaet til, og koer linjen igen.' }
+Write-Host '   Forbundet'
 
 Write-Host '3/5 Installerer' -ForegroundColor Cyan
 $res = & $adb -s $tv install -r $apk 2>&1 | Out-String
