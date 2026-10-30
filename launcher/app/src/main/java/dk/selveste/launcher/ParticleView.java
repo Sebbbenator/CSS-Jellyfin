@@ -17,7 +17,7 @@ final class ParticleView extends View {
     static final int EMBERS = 2;
     static final int FIREWORKS = 3;
 
-    private static final int COUNT = 70;
+    private static final int COUNT = 40;
 
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Random random = new Random();
@@ -114,7 +114,7 @@ final class ParticleView extends View {
     protected void onDraw(Canvas c) {
         if (mode == NONE) return;
         long now = System.nanoTime();
-        float dt = last == 0 ? 0 : Math.min(0.05f, (now - last) / 1e9f);
+        float dt = last == 0 ? 0 : Math.min(0.08f, (now - last) / 1e9f);
         last = now;
         float h = getHeight();
         float w = getWidth();
@@ -135,6 +135,7 @@ final class ParticleView extends View {
             c.drawCircle(x[i], y[i], size[i], paint);
         }
         if (mode == FIREWORKS && !alive && random.nextInt(20) == 0) burst();
-        postInvalidateOnAnimation();
+        // 30 billeder i sekundet er nok til sne og gløder og halverer arbejdet
+        postInvalidateDelayed(33);
     }
 }

@@ -45,6 +45,7 @@ public class SettingsActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        MainActivity.appsDirty = true;
         if (quickConnectPoll != null) handler.removeCallbacks(quickConnectPoll);
     }
 

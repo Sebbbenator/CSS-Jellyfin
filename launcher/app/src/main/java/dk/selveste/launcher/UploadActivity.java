@@ -75,6 +75,7 @@ public class UploadActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        MainActivity.appsDirty = true;
         if (server != null) server.stop();
     }
 

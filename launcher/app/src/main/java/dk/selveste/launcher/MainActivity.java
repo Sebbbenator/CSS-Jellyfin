@@ -5,8 +5,10 @@ import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -53,6 +55,8 @@ public class MainActivity extends Activity {
 
     /** Sat af HomeService når tv'et tændes. */
     static volatile boolean wokeUp;
+    /** Sat når apps installeres eller fjernes, eller indstillinger ændres; ellers genbruges rækkerne. */
+    static volatile boolean appsDirty = true;
     private static MainActivity visible;
 
     private static final Locale DANISH = new Locale("da", "DK");
@@ -102,18 +106,44 @@ public class MainActivity extends Activity {
         @Override
         public void run() {
             Date now = new Date();
-            clock.setText(timeFormat.format(now));
-            nightClock.setText(timeFormat.format(now));
-            String d = dateFormat.format(now);
-            date.setText(d.substring(0, 1).toUpperCase(DANISH) + d.substring(1));
-            updateGreeting();
+            String hm = timeFormat.format(now);
+            boolean newMinute = set(clock, hm);
+            set(nightClock, hm);
             updateNight();
-            updateSeason();
-            if (Prefs.BG_HOURLY.equals(prefs.bgMode()) || Prefs.BG_DAILY.equals(prefs.bgMode())) loadBackground(false);
+            if (newMinute) {
+                String d = dateFormat.format(now);
+                set(date, d.substring(0, 1).toUpperCase(DANISH) + d.substring(1));
+                updateGreeting();
+                updateSeason();
+                if (Prefs.BG_HOURLY.equals(prefs.bgMode()) || Prefs.BG_DAILY.equals(prefs.bgMode())) loadBackground(false);
+            }
             if (System.currentTimeMillis() - lastRemoteRefresh > 5 * 60 * 1000) refreshRemote();
             handler.postDelayed(this, 1000 - (System.currentTimeMillis() % 1000));
         }
     };
+
+    private final BroadcastReceiver packages = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            appsDirty = true;
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            unregisterReceiver(packages);
+        } catch (Exception ignored) {
+        }
+    }
+
+    /** Sætter kun teksten, når den ændrer sig, så layoutet ikke regnes om hvert sekund. */
+    private static boolean set(TextView v, String text) {
+        if (text.contentEquals(v.getText())) return false;
+        v.setText(text);
+        return true;
+    }
 
     static void onScreenOn() {
         MainActivity a = visible;
@@ -130,6 +160,12 @@ public class MainActivity extends Activity {
         jf = new Jellyfin(prefs);
         setContentView(buildLayout());
         wokeUp = true;
+        IntentFilter pkgFilter = new IntentFilter();
+        pkgFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        pkgFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        pkgFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        pkgFilter.addDataScheme("package");
+        registerReceiver(packages, pkgFilter);
     }
 
     @Override
@@ -139,7 +175,7 @@ public class MainActivity extends Activity {
         backgrounds.importShared();
         loadBackground(pendingHome);
         pendingHome = false;
-        refreshApps();
+        if (appsDirty) refreshApps();
         refreshRemote();
         handler.removeCallbacks(tick);
         handler.post(tick);
@@ -288,6 +324,7 @@ public class MainActivity extends Activity {
     // Apps
 
     private void refreshApps() {
+        appsDirty = false;
         String focusedKey = focusedKey();
         repository.load(Features.on(prefs, Features.DICE) && jf.configured());
         fillRow(sectionApps, "APPS", repository.apps, true);
@@ -408,7 +445,7 @@ public class MainActivity extends Activity {
         final TextView subF = sub;
         card.setOnFocusChangeListener((v, has) -> {
             float s = has ? 1.08f : 1f;
-            v.animate().scaleX(s).scaleY(s).translationZ(has ? dp(8) : 0).setDuration(140).start();
+            v.animate().scaleX(s).scaleY(s).setDuration(140).start();
             bg.setStroke(dp(has ? 3 : 1), has ? currentAccent() : Ui.CARD_STROKE);
             l.setTextColor(has ? Ui.TEXT : Ui.TEXT_DIM);
             l.setAlpha(has ? 1f : 0.75f);
@@ -693,21 +730,32 @@ public class MainActivity extends Activity {
         }
         shownBackground = name;
         File f = name == null ? null : backgrounds.file(name);
-        Bitmap bmp = f == null ? null : Backgrounds.decode(f, Math.max(getResources().getDisplayMetrics().widthPixels, 1280));
-        background.setAlpha(0f);
-        background.setImageBitmap(bmp);
-        background.animate().alpha(1f).setDuration(600).start();
-        int newAccent = Features.on(prefs, Features.ACCENT) ? Backgrounds.accent(bmp, Ui.CYAN) : Ui.CYAN;
-        if (newAccent != accent) {
-            accent = newAccent;
-            refreshApps();
-        }
-        clock.setShadowLayer(dp(12), 0, 0, HudView.withAlpha(currentAccent(), 0.5f));
-        startKenBurns(bmp != null && Features.on(prefs, Features.KEN_BURNS));
+        int width = Math.max(getResources().getDisplayMetrics().widthPixels, 1280);
+        boolean wantAccent = Features.on(prefs, Features.ACCENT);
+        // Billedet læses på en baggrundstråd, så Home ikke hakker, når baggrunden skifter
+        Net.async(() -> {
+            Bitmap bmp = f == null ? null : Backgrounds.decode(f, width);
+            return new Object[]{bmp, wantAccent ? Backgrounds.accent(bmp, Ui.CYAN) : Ui.CYAN};
+        }, (res, err) -> {
+            if (res == null || isDestroyed() || (name != null && !name.equals(shownBackground))) return;
+            Bitmap bmp = (Bitmap) res[0];
+            background.setAlpha(0f);
+            background.setImageBitmap(bmp);
+            background.animate().alpha(1f).setDuration(400).start();
+            int newAccent = (Integer) res[1];
+            if (newAccent != accent) {
+                accent = newAccent;
+                refreshApps();
+            }
+            clock.setShadowLayer(dp(12), 0, 0, HudView.withAlpha(currentAccent(), 0.5f));
+            startKenBurns(bmp != null && Features.on(prefs, Features.KEN_BURNS));
+        });
     }
 
     private void startKenBurns(boolean on) {
         if (kenBurns != null) kenBurns.cancel();
+        // Hardware lag: zoomen flytter bare en færdig tekstur i stedet for at tegne billedet om
+        background.setLayerType(on ? View.LAYER_TYPE_HARDWARE : View.LAYER_TYPE_NONE, null);
         background.setScaleX(1f);
         background.setScaleY(1f);
         background.setTranslationX(0);
@@ -735,9 +783,9 @@ public class MainActivity extends Activity {
     }
 
     private void updateGreeting() {
-        greeting.setText(greetingText());
+        set(greeting, greetingText());
         if (!Features.on(prefs, Features.TOGETHER)) {
-            together.setText("");
+            set(together, "");
             return;
         }
         Calendar start = Calendar.getInstance();
@@ -763,7 +811,7 @@ public class MainActivity extends Activity {
         else if (days % 100 == 0 && days > 0) extra = "I dag: " + days + " dage!";
         else if (toHundred <= toAnniversary) extra = nextHundred + " dage " + when(toHundred);
         else extra = years + " år " + when(toAnniversary);
-        together.setText("♥ " + days + " dage sammen  ·  " + extra);
+        set(together, "♥ " + days + " dage sammen  ·  " + extra);
     }
 
     private static String when(long days) {

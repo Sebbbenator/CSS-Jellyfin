@@ -143,6 +143,7 @@ final class Backgrounds {
         while (bounds.outWidth / (sample * 2) >= targetWidth) sample *= 2;
         BitmapFactory.Options opts = new BitmapFactory.Options();
         opts.inSampleSize = sample;
+        opts.inPreferredConfig = Bitmap.Config.RGB_565;
         Bitmap bmp = BitmapFactory.decodeFile(file.getPath(), opts);
         if (bmp == null) return null;
         int degrees = 0;
