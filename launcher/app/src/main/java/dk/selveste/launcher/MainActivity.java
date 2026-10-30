@@ -307,14 +307,15 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Baggrunden lægges på sticken med adb push til appens egen mappe. */
+    /** Baggrunden lægges i appens mappe af install.ps1 (adb push + run-as). */
     private void loadBackground() {
-        File dir = getExternalFilesDir(null);
         File file = null;
-        if (dir != null) {
+        // Appens egen mappe først (run-as kopi fra install.ps1), ellers den eksterne mappe
+        for (File dir : new File[]{getFilesDir(), getExternalFilesDir(null)}) {
+            if (dir == null || file != null) continue;
             for (String name : new String[]{"baggrund.jpg", "baggrund.jpeg", "baggrund.png"}) {
                 File f = new File(dir, name);
-                if (f.isFile()) {
+                if (f.isFile() && f.canRead()) {
                     file = f;
                     break;
                 }

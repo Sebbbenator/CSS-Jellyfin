@@ -44,10 +44,13 @@ Write-Host '4/5 Baggrundsbillede' -ForegroundColor Cyan
 $img = Get-ChildItem -Path $dir, "$env:USERPROFILE\Downloads", "$env:USERPROFILE\OneDrive\Billeder", "$env:USERPROFILE\Pictures" -Filter 'baggrund.*' -File -ErrorAction SilentlyContinue |
     Where-Object { $_.Extension -match '^\.(jpe?g|png)$' } | Select-Object -First 1
 if ($img) {
-    $remote = "/sdcard/Android/data/$pkg/files"
-    & $adb -s $tv shell mkdir -p $remote | Out-Null
-    & $adb -s $tv shell "rm -f $remote/baggrund.*" | Out-Null
-    & $adb -s $tv push $img.FullName "$remote/baggrund$($img.Extension.ToLower())" | Out-Host
+    $tmp = '/data/local/tmp/jarvis-baggrund'
+    & $adb -s $tv push $img.FullName $tmp | Out-Host
+    & $adb -s $tv shell chmod 644 $tmp | Out-Null
+    & $adb -s $tv shell "run-as $pkg sh -c 'mkdir -p files && rm -f files/baggrund.* && cat $tmp > files/baggrund.jpg'" | Out-Host
+    & $adb -s $tv shell rm -f $tmp | Out-Null
+    & $adb -s $tv shell am force-stop $pkg | Out-Null
+    & $adb -s $tv shell am start -n "$pkg/.MainActivity" | Out-Null
     Write-Host "   Brugte $($img.FullName)"
 } else {
     Write-Host '   Intet baggrund.jpg fundet i Overfoersler eller Billeder, springer over'

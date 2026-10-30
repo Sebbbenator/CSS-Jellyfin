@@ -17,6 +17,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            // run-as kræver debuggable; install.ps1 kopierer baggrunden ind i appens mappe med det
+            debuggable true
             // Ingen nøgle i repoet: hver build signeres med runnerens debug nøgle,
             // og install.ps1 geninstallerer når signaturen skifter
             signingConfig signingConfigs.debug
