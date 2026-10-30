@@ -37,24 +37,24 @@ if ($res -match 'UPDATE_INCOMPATIBLE|signatures do not match') {
 }
 Write-Host $res
 if ($res -notmatch 'Success') { throw 'Installationen fejlede, se teksten ovenfor' }
-& $adb -s $tv shell am start -n "$pkg/.MainActivity" | Out-Null
-Start-Sleep -Seconds 2
 
-Write-Host '4/5 Baggrundsbillede' -ForegroundColor Cyan
-$img = Get-ChildItem -Path $dir, "$env:USERPROFILE\Downloads", "$env:USERPROFILE\OneDrive\Billeder", "$env:USERPROFILE\Pictures" -Filter 'baggrund.*' -File -ErrorAction SilentlyContinue |
-    Where-Object { $_.Extension -match '^\.(jpe?g|png)$' } | Select-Object -First 1
-if ($img) {
-    $tmp = '/data/local/tmp/jarvis-baggrund'
-    & $adb -s $tv push $img.FullName $tmp | Out-Host
-    & $adb -s $tv shell chmod 644 $tmp | Out-Null
-    & $adb -s $tv shell "run-as $pkg sh -c 'mkdir -p files && rm -f files/baggrund.* && cat $tmp > files/baggrund.jpg'" | Out-Host
-    & $adb -s $tv shell rm -f $tmp | Out-Null
-    & $adb -s $tv shell am force-stop $pkg | Out-Null
-    & $adb -s $tv shell am start -n "$pkg/.MainActivity" | Out-Null
-    Write-Host "   Brugte $($img.FullName)"
-} else {
-    Write-Host '   Intet baggrund.jpg fundet i Overfoersler eller Billeder, springer over'
+Write-Host '4/5 Baggrunde og rettigheder' -ForegroundColor Cyan
+# Billeder fra pc'en: baggrund.* i Overfoersler/Billeder + alt i Billeder\Jarvis TV. Appen henter dem selv ind.
+$imgs = @()
+$imgs += Get-ChildItem -Path $dir, "$env:USERPROFILE\Downloads", "$env:USERPROFILE\OneDrive\Billeder", "$env:USERPROFILE\Pictures" -Filter 'baggrund.*' -File -ErrorAction SilentlyContinue
+$imgs += Get-ChildItem -Path "$env:USERPROFILE\Pictures\Jarvis TV", "$env:USERPROFILE\OneDrive\Billeder\Jarvis TV" -File -ErrorAction SilentlyContinue
+$imgs = $imgs | Where-Object { $_.Extension -match '^\.(jpe?g|png)$' }
+& $adb -s $tv shell mkdir -p /sdcard/Pictures/JarvisTV | Out-Null
+foreach ($img in $imgs) {
+    & $adb -s $tv push $img.FullName "/sdcard/Pictures/JarvisTV/$($img.Name)" | Out-Null
+    Write-Host "   $($img.Name)"
 }
+if (-not $imgs) { Write-Host '   Ingen billeder fra pc''en (laeg dem op fra telefonen i stedet)' }
+& $adb -s $tv shell pm grant $pkg android.permission.READ_EXTERNAL_STORAGE 2>&1 | Out-Null
+& $adb -s $tv shell appops set $pkg REQUEST_INSTALL_PACKAGES allow | Out-Null
+& $adb -s $tv shell settings put secure screensaver_components "$pkg/$pkg.JarvisDream" | Out-Null
+& $adb -s $tv shell settings put secure screensaver_enabled 1 | Out-Null
+& $adb -s $tv shell am force-stop $pkg | Out-Null
 
 Write-Host '5/5 Home knappen til Jarvis TV' -ForegroundColor Cyan
 $old = "$(& $adb -s $tv shell settings get secure enabled_accessibility_services)".Trim()

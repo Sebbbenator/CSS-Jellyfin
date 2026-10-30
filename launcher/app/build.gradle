@@ -14,14 +14,26 @@ android {
         versionName "1.0." + (System.getenv("GITHUB_RUN_NUMBER") ?: "0")
     }
 
+    signingConfigs {
+        // Fast nøgle fra GitHub secrets (lav-noegle.ps1), så selvopdatering virker.
+        // Nøglen ligger aldrig i repoet.
+        jarvis {
+            def ks = System.getenv("JARVIS_KEYSTORE")
+            if (ks) {
+                storeFile file(ks)
+                storeType "pkcs12"
+                storePassword System.getenv("JARVIS_KEYSTORE_PASS")
+                keyAlias System.getenv("JARVIS_KEY_ALIAS")
+                keyPassword System.getenv("JARVIS_KEYSTORE_PASS")
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
-            // run-as kræver debuggable; install.ps1 kopierer baggrunden ind i appens mappe med det
-            debuggable true
-            // Ingen nøgle i repoet: hver build signeres med runnerens debug nøgle,
-            // og install.ps1 geninstallerer når signaturen skifter
-            signingConfig signingConfigs.debug
+            // Uden secret: runnerens debug nøgle, og install.ps1 geninstallerer ved nøgleskift
+            signingConfig System.getenv("JARVIS_KEYSTORE") ? signingConfigs.jarvis : signingConfigs.debug
         }
     }
 
@@ -34,4 +46,8 @@ android {
         abortOnError false
         checkReleaseBuilds false
     }
+}
+
+dependencies {
+    implementation "io.nayuki:qrcodegen:1.8.0"
 }

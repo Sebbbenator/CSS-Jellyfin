@@ -7,7 +7,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
-import android.provider.Settings;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -45,7 +44,13 @@ final class AppRepository {
             new Favorite("hyperion", "com.abrenoch.hyperiongrabber"),
     };
 
-    static final String SETTINGS_KEY = "jarvis:settings";
+    static final String SETTINGS_KEY = "jarvis:firetv";
+    static final String JARVIS_SETTINGS_KEY = "jarvis:settings";
+    static final String DICE_KEY = "jarvis:dice";
+
+    static final String ROW_APPS = "apps";
+    static final String ROW_TOOLS = "tools";
+    static final String ROW_REST = "rest";
 
     final List<AppEntry> apps = new ArrayList<>();
     final List<AppEntry> tools = new ArrayList<>();
@@ -59,23 +64,85 @@ final class AppRepository {
         this.pm = context.getPackageManager();
     }
 
-    void load() {
+    void load(boolean dice) {
         apps.clear();
         tools.clear();
         rest.clear();
+        Prefs prefs = new Prefs(context);
 
         Map<String, AppEntry> all = new LinkedHashMap<>();
         collect(all, Intent.CATEGORY_LEANBACK_LAUNCHER);
         collect(all, Intent.CATEGORY_LAUNCHER);
         all.remove(context.getPackageName());
+        for (String h : prefs.hidden()) all.remove(h);
 
         pick(all, APPS, apps);
         pick(all, TOOLS, tools);
-        tools.add(settingsEntry());
-
         rest.addAll(all.values());
         Collator collator = Collator.getInstance(new Locale("da", "DK"));
         Collections.sort(rest, (a, b) -> collator.compare(a.label, b.label));
+
+        // Apps flyttet til en anden række med langt tryk
+        List<AppEntry> everything = new ArrayList<>();
+        everything.addAll(apps);
+        everything.addAll(tools);
+        everything.addAll(rest);
+        for (AppEntry e : everything) {
+            String row = prefs.rowOverride(e.packageName);
+            if (row == null) continue;
+            apps.remove(e);
+            tools.remove(e);
+            rest.remove(e);
+            list(row).add(e);
+        }
+
+        if (dice) apps.add(special(DICE_KEY, "Hvad skal vi se?", android.R.drawable.ic_menu_help));
+        tools.add(special(SETTINGS_KEY, "Fire TV", android.R.drawable.ic_menu_manage));
+        tools.add(special(JARVIS_SETTINGS_KEY, "Jarvis indstillinger", android.R.drawable.ic_menu_preferences));
+
+        applyOrder(prefs, ROW_APPS, apps);
+        applyOrder(prefs, ROW_TOOLS, tools);
+        applyOrder(prefs, ROW_REST, rest);
+    }
+
+    List<AppEntry> list(String row) {
+        switch (row) {
+            case ROW_APPS: return apps;
+            case ROW_TOOLS: return tools;
+            default: return rest;
+        }
+    }
+
+    String rowOf(AppEntry e) {
+        if (apps.contains(e)) return ROW_APPS;
+        if (tools.contains(e)) return ROW_TOOLS;
+        return ROW_REST;
+    }
+
+    private static void applyOrder(Prefs prefs, String row, List<AppEntry> entries) {
+        List<String> order = prefs.order(row);
+        if (order.isEmpty()) return;
+        List<AppEntry> copy = new ArrayList<>(entries);
+        Collections.sort(entries, (a, b) -> {
+            int ia = order.indexOf(a.packageName);
+            int ib = order.indexOf(b.packageName);
+            if (ia < 0) ia = order.size() + copy.indexOf(a);
+            if (ib < 0) ib = order.size() + copy.indexOf(b);
+            return Integer.compare(ia, ib);
+        });
+    }
+
+    /** Flyt en flise én plads og gem rækkefølgen. */
+    void move(AppEntry e, int delta) {
+        String row = rowOf(e);
+        List<AppEntry> l = list(row);
+        int i = l.indexOf(e);
+        int j = i + delta;
+        if (i < 0 || j < 0 || j >= l.size()) return;
+        Collections.swap(l, i, j);
+        List<String> order = new ArrayList<>();
+        for (AppEntry x : l) order.add(x.packageName);
+        new Prefs(context).setOrder(row, order);
     }
 
     private void collect(Map<String, AppEntry> into, String category) {
@@ -129,12 +196,11 @@ final class AppRepository {
         }
     }
 
-    private AppEntry settingsEntry() {
-        // Fire TV har sin egen indstillingsapp; almindelig Android som reserve
-        Intent launch = pm.getLaunchIntentForPackage("com.amazon.tv.settings.v2");
-        if (launch == null) launch = new Intent(Settings.ACTION_SETTINGS);
-        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        return new AppEntry(SETTINGS_KEY, "Indstillinger", null,
-                context.getDrawable(android.R.drawable.ic_menu_manage), launch);
+    private AppEntry special(String key, String label, int icon) {
+        return new AppEntry(key, label, null, context.getDrawable(icon), null);
+    }
+
+    static boolean isSpecial(AppEntry e) {
+        return e.packageName.startsWith("jarvis:");
     }
 }

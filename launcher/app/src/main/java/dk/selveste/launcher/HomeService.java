@@ -1,7 +1,11 @@
 package dk.selveste.launcher;
 
 import android.accessibilityservice.AccessibilityService;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.SystemClock;
@@ -22,12 +26,45 @@ public class HomeService extends AccessibilityService {
     private static final String TAG = "JarvisHome";
     private static final String AMAZON_LAUNCHER = "com.amazon.tv.launcher";
 
+    private static HomeService instance;
+
     private final Set<String> homeActivities = new HashSet<>();
     private long lastLaunch;
+
+    private final BroadcastReceiver screenOn = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Tv'et er tændt: Jarvis opstart næste gang forsiden vises
+            MainActivity.wokeUp = true;
+            MainActivity.onScreenOn();
+        }
+    };
+
+    static boolean isRunning() {
+        return instance != null;
+    }
+
+    /** Sov nu fra Fire TV menuen. */
+    static boolean sleepNow() {
+        if (instance == null || Build.VERSION.SDK_INT < 28) return false;
+        return instance.performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        try {
+            unregisterReceiver(screenOn);
+        } catch (Exception ignored) {
+        }
+        instance = null;
+    }
 
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
+        instance = this;
+        registerReceiver(screenOn, new IntentFilter(Intent.ACTION_SCREEN_ON));
         homeActivities.clear();
         PackageManager pm = getPackageManager();
         Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
@@ -55,6 +92,7 @@ public class HomeService extends AccessibilityService {
         lastLaunch = now;
         Log.i(TAG, "Home fanget: " + pkg + "/" + cls);
         startActivity(new Intent(this, MainActivity.class)
+                .putExtra(MainActivity.EXTRA_HOME, true)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_NO_ANIMATION));

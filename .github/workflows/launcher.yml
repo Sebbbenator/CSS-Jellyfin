@@ -25,15 +25,32 @@ jobs:
         with:
           gradle-version: "8.10.2"
 
+      - name: Fast signeringsnøgle fra secrets
+        env:
+          KS_B64: ${{ secrets.JARVIS_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.JARVIS_KEYSTORE_PASS }}
+        run: |
+          if [ -z "$KS_B64" ]; then
+            echo "Ingen secret, bruger debug nøgle"
+            exit 0
+          fi
+          echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/jarvis.p12"
+          alias=$(keytool -list -keystore "$RUNNER_TEMP/jarvis.p12" -storetype pkcs12 -storepass "$KS_PASS" \
+            | grep -i "PrivateKeyEntry" | head -1 | sed 's/, .*//')
+          echo "JARVIS_KEYSTORE=$RUNNER_TEMP/jarvis.p12" >> "$GITHUB_ENV"
+          echo "JARVIS_KEY_ALIAS=$alias" >> "$GITHUB_ENV"
+
       - name: Byg APK
         working-directory: launcher
+        env:
+          JARVIS_KEYSTORE_PASS: ${{ secrets.JARVIS_KEYSTORE_PASS }}
         run: gradle --no-daemon assembleRelease
 
       - name: Saml filer
         run: |
           mkdir out
           cp launcher/app/build/outputs/apk/release/app-release.apk out/jarvis-tv.apk
-          cp launcher/install.ps1 launcher/undo.ps1 out/
+          cp launcher/install.ps1 launcher/undo.ps1 launcher/lav-noegle.ps1 out/
 
       - uses: actions/upload-artifact@v4
         with:
