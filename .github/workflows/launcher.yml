@@ -62,8 +62,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="launcher-v${GITHUB_RUN_NUMBER}"
+          # Commit beskeden bliver til "Nyt i denne version" på tv'et (uden tekniske trailers)
+          git log -1 --format=%B | grep -vE '^(Co-Authored-By|Claude-Session):' > notes.txt
           gh release create "$tag" out/* \
             --target "$GITHUB_SHA" \
             --title "Jarvis TV ${GITHUB_RUN_NUMBER}" \
-            --notes "Bygget fra ${GITHUB_REF_NAME} @ ${GITHUB_SHA::7}" \
+            --notes-file notes.txt \
             --latest

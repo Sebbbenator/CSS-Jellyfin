@@ -20,7 +20,25 @@ final class Prefs {
 
     static final String DEFAULT_HA_URL = "http://192.168.111.25:8123";
     static final String DEFAULT_JF_URL = "http://192.168.111.25:8096";
-    static final String DEFAULT_HA_BUTTONS = "switch.lys_sync,input_boolean.tv_sync,input_select.vaerelset,light.sebbe_bordlampe";
+    static final String DEFAULT_HA_BUTTONS = "switch.lys_sync,input_select.vaerelset,light.sebbe_bordlampe";
+
+    /** Accentfarver: nøgle, navn, farve. "auto" tager farven fra baggrunden. */
+    static final String[][] ACCENTS = {
+            {"cyan", "Jarvis cyan", "#4FD8FF"},
+            {"is", "Is", "#BDF3FF"},
+            {"guld", "Guld", "#FFC640"},
+            {"roed", "Iron Man rød", "#FF5A5F"},
+            {"groen", "Grøn", "#5CFFB0"},
+            {"lilla", "Lilla", "#B48CFF"},
+            {"auto", "Fra baggrunden", ""},
+    };
+
+    /** Flisestørrelser: nøgle, navn, bredde på Apps rækken, bredde på de andre (dp). */
+    static final String[][] TILE_SIZES = {
+            {"kompakt", "Kompakt", "176", "136"},
+            {"normal", "Normal", "208", "160"},
+            {"stor", "Stor", "240", "192"},
+    };
 
     private final SharedPreferences sp;
 
@@ -151,6 +169,66 @@ final class Prefs {
             sp.edit().putString("device_id", id).apply();
         }
         return id;
+    }
+
+    // Udseende
+
+    String accentKey() {
+        return sp.getString("accent", "cyan");
+    }
+
+    void setAccentKey(String key) {
+        sp.edit().putString("accent", key).apply();
+    }
+
+    /** Den valgte faste accentfarve, eller cyan når den skal komme fra baggrunden. */
+    int accentColor() {
+        for (String[] a : ACCENTS) {
+            if (a[0].equals(accentKey()) && !a[2].isEmpty()) return android.graphics.Color.parseColor(a[2]);
+        }
+        return Ui.CYAN;
+    }
+
+    String tileSize() {
+        return sp.getString("tile_size", "normal");
+    }
+
+    void setTileSize(String key) {
+        sp.edit().putString("tile_size", key).apply();
+    }
+
+    int[] tileWidths() {
+        for (String[] t : TILE_SIZES) {
+            if (t[0].equals(tileSize())) return new int[]{Integer.parseInt(t[2]), Integer.parseInt(t[3])};
+        }
+        return new int[]{208, 160};
+    }
+
+    void setHaButtons(List<String> ids) {
+        sp.edit().putString("ha_buttons", String.join(",", ids)).apply();
+    }
+
+    // Version og fejl
+
+    int lastSeenVersion() {
+        return sp.getInt("last_seen_version", 0);
+    }
+
+    void setLastSeenVersion(int v) {
+        sp.edit().putInt("last_seen_version", v).apply();
+    }
+
+    String lastCrash() {
+        return sp.getString("last_crash", "");
+    }
+
+    /** commit, fordi appen er ved at gå ned, når den kaldes. */
+    void setLastCrash(String text) {
+        sp.edit().putString("last_crash", text).commit();
+    }
+
+    void clearLastCrash() {
+        sp.edit().remove("last_crash").apply();
     }
 
     // Diverse

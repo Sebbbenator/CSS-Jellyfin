@@ -77,6 +77,19 @@ final class Jellyfin {
         return items(get("/UserItems/Resume?userId=" + u + "&" + q, "/Users/" + u + "/Items/Resume?" + q));
     }
 
+    /** Næste afsnit af serier, der er i gang, lagt efter dem med fremskridt. */
+    void addNextUp(List<Item> into) throws Exception {
+        String u = prefs.jfUser();
+        String q = "limit=12&enableResumable=false&enableUserData=true";
+        List<Item> next = items(get("/Shows/NextUp?userId=" + u + "&" + q));
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (Item it : into) seen.add(it.title);
+        for (Item it : next) {
+            // Én flise pr. serie: står serien allerede i Fortsæt at se, springes næste afsnit over
+            if (seen.add(it.title) && into.size() < 16) into.add(it);
+        }
+    }
+
     List<Item> latest() throws Exception {
         String u = prefs.jfUser();
         String q = "limit=16&includeItemTypes=Movie,Episode&groupItems=true";
