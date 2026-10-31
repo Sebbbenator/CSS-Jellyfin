@@ -1,30 +1,47 @@
-# Jarvis TV
+# Jarvis TV (SebTV OS)
 
-Egen forside til Fire TV Stick 4K: app rækker, 24 timers ur, eget baggrundsbillede og mørk Jarvis stil med cyan accent.
+Egen forside til Fire TV Stick 4K: app rækker, ur, egne baggrunde og mørk Jarvis stil.
 Fire OS tillader ikke en anden forside, så `HomeService` (en accessibility service) åbner Jarvis TV, når Amazons forside kommer frem.
 
 ## Byg
 
-GitHub Actions bygger APK'en ved hvert push under `launcher/` og udgiver den som release (`launcher-vN`).
+GitHub Actions bygger APK'en ved hvert push og udgiver den som release (`launcher-vN`). Versionerne i dette repo starter ved 101,
+fordi version 1 til 9 blev bygget i CSS-Jellyfin repoet.
 
 ## Installér eller opdatér
 
 Slå ADB debugging til på sticken og kør i PowerShell på pc'en:
 
 ```powershell
-irm https://github.com/sebbbenator/css-jellyfin/releases/latest/download/install.ps1 | iex
+irm https://github.com/Sebbbenator/SebTV-OS/releases/latest/download/install.ps1 | iex
 ```
 
-Baggrunde lægges op fra telefonen: Jarvis indstillinger > Læg billeder op fra telefonen viser en QR kode og en kode.
-Scriptet tager også `baggrund.*` fra Overførsler og alt i `Billeder\Jarvis TV` med. Billederne ligger kun på sticken, aldrig i repoet.
+En anden stick, fx over Tailscale (sæt adressen først i samme PowerShell vindue):
 
+```powershell
+$env:JARVIS_TV='100.x.y.z'; irm https://github.com/Sebbbenator/SebTV-OS/releases/latest/download/install.ps1 | iex
+```
+
+Derefter opdaterer appen sig selv: om natten kl. ca. 4, eller under Indstillinger > Søg efter opdatering.
 `undo.ps1` giver Home knappen tilbage til den launcher, der var før.
 
-## Rækker
+## Profil
 
-Favoritter og værktøjer står i `AppRepository.java` (`APPS` og `TOOLS`). Resten af de installerede apps står under Alle apps.
-Menu knappen eller et langt tryk på en flise åbner appens info.
+Navn, hilsen, kæreste, dato og profilbillede sættes under Indstillinger > Profil eller på telefonsiden.
+Jellyfin findes selv på LAN eller over Tailscale, så samme app virker uden for huset.
 
-Der ligger ingen signeringsnøgle i repoet. `lav-noegle.ps1` laver en fast nøgle på pc'en og hjælper med at gemme den som GitHub secrets (`JARVIS_KEYSTORE_B64`, `JARVIS_KEYSTORE_PASS`). Med den kan Jarvis TV opdatere sig selv fra GitHub. Uden secrets bruges en debug nøgle, og `install.ps1` geninstallerer ved nøgleskift.
+## Home Assistant
 
-Jellyfin forbindes med Quick Connect, og Home Assistant token indsættes på telefonsiden. Begge gemmes kun på sticken.
+- Token indsættes på telefonsiden og gemmes kun på sticken.
+- `input_select.vaerelset` vises som rækken Tilstande.
+- `input_text.jarvis_tv`: når HA skriver i den, vises teksten som banner øverst på tv'et (også oven på andre apps).
+  `Titel | tekst` giver en egen overskrift.
+- Kalendere med sonarr eller radarr i navnet giver rækken Kommer snart.
+- Events: `jarvis_konami` og `jarvis_tv_fokus`.
+
+## Nøgle
+
+Der ligger ingen signeringsnøgle i repoet. `lav-noegle.ps1` laver (eller genbruger) en fast nøgle på pc'en og hjælper med at gemme den
+som GitHub secrets (`JARVIS_KEYSTORE_B64`, `JARVIS_KEYSTORE_PASS`). Uden dem bygges der ikke en release.
+
+Skrifterne Orbitron og Rajdhani ligger i `app/src/main/assets/fonts` under SIL Open Font License.

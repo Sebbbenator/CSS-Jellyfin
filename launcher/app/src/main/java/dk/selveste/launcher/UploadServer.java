@@ -159,6 +159,20 @@ final class UploadServer {
             backgrounds.select(name);
             notifyChanged();
             send(out, 200, "application/json", bytes(state().toString()));
+        } else if (path.equals("/api/profile-picture") && method.equals("POST")) {
+            if (body.length == 0) ProfilePicture.delete(context);
+            else ProfilePicture.save(context, body);
+            notifyChanged();
+            send(out, 200, "application/json", bytes(state().toString()));
+        } else if (path.equals("/profil.jpg")) {
+            File pf = ProfilePicture.file(context);
+            if (!pf.exists()) {
+                send(out, 404, "text/plain", bytes("Intet billede"));
+                return;
+            }
+            try (InputStream fin = new FileInputStream(pf)) {
+                send(out, 200, "image/jpeg", Net.readAll(fin));
+            }
         } else if (path.equals("/api/select") && method.equals("POST")) {
             backgrounds.select(query.get("name"));
             notifyChanged();
@@ -181,6 +195,11 @@ final class UploadServer {
             }
             prefs.setHa(j.optString("haUrl", null), j.optString("haToken", null), j.optString("haButtons", null));
             if (j.optBoolean("haForget", false)) prefs.clearHaToken();
+            JSONObject p = j.optJSONObject("profile");
+            if (p != null) {
+                prefs.setProfile(p.optString("name", null), p.optString("greeting", null),
+                        p.optString("partner", null), p.optString("together", null));
+            }
             notifyChanged();
             send(out, 200, "application/json", bytes(state().toString()));
         } else {
@@ -205,6 +224,12 @@ final class UploadServer {
         j.put("haUrl", prefs.haUrl());
         j.put("haTokenSet", !prefs.haToken().isEmpty());
         j.put("haButtons", prefs.haButtons());
+        j.put("profile", new JSONObject()
+                .put("name", prefs.profileName())
+                .put("greeting", prefs.customGreeting())
+                .put("partner", prefs.partnerName())
+                .put("together", prefs.togetherSinceText())
+                .put("picture", ProfilePicture.file(context).exists()));
         return j;
     }
 

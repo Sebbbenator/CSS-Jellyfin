@@ -8,9 +8,12 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,18 +33,32 @@ public class HomeService extends AccessibilityService {
 
     private final Set<String> homeActivities = new HashSet<>();
     private long lastLaunch;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private JarvisMessages messages;
 
-    private final BroadcastReceiver screenOn = new BroadcastReceiver() {
+    private final BroadcastReceiver screen = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                if (messages != null) messages.stop();
+                return;
+            }
             // Tv'et er tændt: Jarvis opstart næste gang forsiden vises
             MainActivity.wokeUp = true;
             MainActivity.onScreenOn();
+            if (messages != null) messages.start();
         }
     };
 
     static boolean isRunning() {
         return instance != null;
+    }
+
+    /** Prøvebesked fra indstillingerne. */
+    static boolean testMessage(String text) {
+        if (instance == null || instance.messages == null) return false;
+        instance.messages.show(text, null);
+        return true;
     }
 
     /** Sov nu fra Fire TV menuen. */
@@ -54,9 +71,11 @@ public class HomeService extends AccessibilityService {
     public void onDestroy() {
         super.onDestroy();
         try {
-            unregisterReceiver(screenOn);
+            unregisterReceiver(screen);
         } catch (Exception ignored) {
         }
+        if (messages != null) messages.stop();
+        handler.removeCallbacksAndMessages(null);
         instance = null;
     }
 
@@ -64,7 +83,12 @@ public class HomeService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         instance = this;
-        registerReceiver(screenOn, new IntentFilter(Intent.ACTION_SCREEN_ON));
+        IntentFilter f = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        f.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(screen, f);
+        NightUpdate.schedule(this);
+        messages = new JarvisMessages(this);
+        messages.start();
         homeActivities.clear();
         PackageManager pm = getPackageManager();
         Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
@@ -85,6 +109,10 @@ public class HomeService extends AccessibilityService {
         CharSequence pkg = event.getPackageName();
         CharSequence cls = event.getClassName();
         if (pkg == null || cls == null) return;
+        if (System.currentTimeMillis() < Updater.autoConfirmUntil && pkg.toString().contains("packageinstaller")) {
+            confirmInstall(0);
+            return;
+        }
         if (!isAmazonHome(pkg.toString(), cls.toString())) return;
 
         long now = SystemClock.elapsedRealtime();
@@ -96,6 +124,41 @@ public class HomeService extends AccessibilityService {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_NO_ANIMATION));
+    }
+
+    /**
+     * Natlig opdatering: trykker på Installér/Opdater i Fire OS dialogen. Kun mens Updater har
+     * bedt om det (få minutter), og kun i pakkeinstallatøren, så ingen andre apps røres.
+     */
+    private void confirmInstall(int attempt) {
+        if (System.currentTimeMillis() > Updater.autoConfirmUntil || attempt > 20) return;
+        AccessibilityNodeInfo root = getRootInActiveWindow();
+        AccessibilityNodeInfo button = null;
+        if (root != null && root.getPackageName() != null && root.getPackageName().toString().contains("packageinstaller")) {
+            for (String id : new String[]{"ok_button", "button1"}) {
+                List<AccessibilityNodeInfo> hits = root.findAccessibilityNodeInfosByViewId(root.getPackageName() + ":id/" + id);
+                if (hits == null || hits.isEmpty()) hits = root.findAccessibilityNodeInfosByViewId("android:id/" + id);
+                if (hits != null && !hits.isEmpty()) {
+                    button = hits.get(0);
+                    break;
+                }
+            }
+            if (button == null) {
+                for (String text : new String[]{"Update", "Install", "Opdater", "Installer"}) {
+                    List<AccessibilityNodeInfo> hits = root.findAccessibilityNodeInfosByText(text);
+                    // Kun knapper: teksten "Do you want to install..." matcher også, men kan ikke trykkes
+                    if (hits != null) for (AccessibilityNodeInfo h : hits) if (h.isClickable()) button = h;
+                    if (button != null) break;
+                }
+            }
+        }
+        if (button != null && button.isEnabled() && button.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+            Log.i(TAG, "Natlig opdatering bekræftet");
+            Updater.autoConfirmUntil = 0;
+            return;
+        }
+        // Knappen er ofte slået fra det første halve sekund
+        handler.postDelayed(() -> confirmInstall(attempt + 1), 500);
     }
 
     private boolean isAmazonHome(String pkg, String cls) {

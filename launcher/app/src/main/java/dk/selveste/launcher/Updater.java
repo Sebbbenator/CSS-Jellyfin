@@ -18,7 +18,13 @@ import java.io.OutputStream;
 /** Henter nyeste Jarvis TV fra GitHub releases og installerer den uden pc. */
 final class Updater {
 
-    static final String RELEASES = "https://api.github.com/repos/Sebbbenator/CSS-Jellyfin/releases/latest";
+    static final String REPO = "Sebbbenator/SebTV-OS";
+    /** Hvor launcheren boede til og med version 9; bruges kun til gamle release noter. */
+    static final String OLD_REPO = "Sebbbenator/CSS-Jellyfin";
+    static final String RELEASES = "https://api.github.com/repos/" + REPO + "/releases/latest";
+
+    /** Sat ved natlig opdatering: indtil da trykker HomeService selv på Installér i Fire OS dialogen. */
+    static volatile long autoConfirmUntil;
 
     static final class Release {
         int number;
@@ -55,6 +61,15 @@ final class Updater {
         }
         if (r.apkUrl == null || r.number <= installedVersion(context)) return null;
         return r;
+    }
+
+    /**
+     * Natlig opdatering (kl. ca. 4, kaldt fra NightUpdate): hent og installer, og lad HomeService
+     * bekræfte dialogen, så det sker uden et tryk. Noterne vises næste gang forsiden åbnes.
+     */
+    static void installUnattended(Context context, Release r) throws Exception {
+        autoConfirmUntil = System.currentTimeMillis() + 3 * 60 * 1000;
+        install(context, r);
     }
 
     /** Hent og installer. Fire OS viser selv en bekræftelse, som InstallReceiver åbner. */

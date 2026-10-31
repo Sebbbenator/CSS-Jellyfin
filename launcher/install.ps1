@@ -1,19 +1,25 @@
 # Installerer eller opdaterer Jarvis TV paa Fire TV sticken og goer den til forside.
-# Koer i PowerShell:  irm https://github.com/sebbbenator/css-jellyfin/releases/latest/download/install.ps1 | iex
+# Koer i PowerShell:  irm https://github.com/Sebbbenator/SebTV-OS/releases/latest/download/install.ps1 | iex
+# Anden stick (fx over Tailscale):  $env:JARVIS_TV='100.x.y.z'; irm .../install.ps1 | iex
 # Kraever at ADB debugging er slaaet til paa sticken.
 
 $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 $adb = "$env:USERPROFILE\platform-tools\adb.exe"
 $tv = '192.168.111.5:5555'
+if ($env:JARVIS_TV) { $tv = $env:JARVIS_TV; if ($tv -notmatch ':') { $tv = "$($tv):5555" } }
+Write-Host "Stick: $tv" -ForegroundColor Cyan
+# Hver stick har sin egen fil med den gamle Home indstilling
+$saveName = 'accessibility-foer.txt'
+if ($tv -ne '192.168.111.5:5555') { $saveName = "accessibility-foer-$($tv -replace '[:.]', '-').txt" }
 $pkg = 'dk.selveste.launcher'
 $dir = "$env:USERPROFILE\tv-launcher"
 New-Item -ItemType Directory -Force $dir | Out-Null
 
 Write-Host '1/5 Henter nyeste Jarvis TV' -ForegroundColor Cyan
 $apk = "$dir\jarvis-tv.apk"
-Invoke-WebRequest 'https://github.com/sebbbenator/css-jellyfin/releases/latest/download/jarvis-tv.apk' -OutFile $apk -UseBasicParsing -ErrorAction Stop
-Invoke-WebRequest 'https://github.com/sebbbenator/css-jellyfin/releases/latest/download/undo.ps1' -OutFile "$dir\undo.ps1" -UseBasicParsing -ErrorAction Stop
+Invoke-WebRequest 'https://github.com/Sebbbenator/SebTV-OS/releases/latest/download/jarvis-tv.apk' -OutFile $apk -UseBasicParsing -ErrorAction Stop
+Invoke-WebRequest 'https://github.com/Sebbbenator/SebTV-OS/releases/latest/download/undo.ps1' -OutFile "$dir\undo.ps1" -UseBasicParsing -ErrorAction Stop
 
 Write-Host '2/5 Forbinder til sticken (godkend paa tv''et hvis den spoerger)' -ForegroundColor Cyan
 $ok = $false
@@ -58,8 +64,8 @@ if (-not $imgs) { Write-Host '   Ingen billeder fra pc''en (laeg dem op fra tele
 Write-Host '5/5 Home knappen til Jarvis TV' -ForegroundColor Cyan
 $old = "$(& $adb -s $tv shell settings get secure enabled_accessibility_services)".Trim()
 if ($old -eq 'null') { $old = '' }
-if ($old -notmatch [regex]::Escape($pkg) -and -not (Test-Path "$dir\accessibility-foer.txt")) {
-    Set-Content "$dir\accessibility-foer.txt" $old
+if ($old -notmatch [regex]::Escape($pkg) -and -not (Test-Path "$dir\$saveName")) {
+    Set-Content "$dir\$saveName" $old
 }
 & $adb -s $tv shell settings put secure enabled_accessibility_services "$pkg/$pkg.HomeService"
 & $adb -s $tv shell settings put secure accessibility_enabled 1
@@ -67,4 +73,5 @@ if ($old -notmatch [regex]::Escape($pkg) -and -not (Test-Path "$dir\accessibilit
 
 Write-Host ''
 Write-Host 'Faerdig. Tryk Home paa fjernbetjeningen for at tjekke.' -ForegroundColor Green
-Write-Host "Tilbage til Projectivy: koer $dir\undo.ps1"
+if ($env:JARVIS_TV) { Write-Host "Tilbage til den gamle forside: `$env:JARVIS_TV='$($env:JARVIS_TV)'; & $dir\undo.ps1" }
+else { Write-Host "Tilbage til Projectivy: koer $dir\undo.ps1" }

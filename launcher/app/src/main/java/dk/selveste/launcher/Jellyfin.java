@@ -52,6 +52,26 @@ final class Jellyfin {
         throw last;
     }
 
+    /**
+     * Finder serveren: først den gemte adresse, så LAN og til sidst Tailscale.
+     * Gør at samme app virker hjemme og på en stick uden for huset.
+     */
+    String findServer() {
+        java.util.LinkedHashSet<String> tries = new java.util.LinkedHashSet<>();
+        tries.add(prefs.jfUrl());
+        tries.add(Prefs.DEFAULT_JF_URL);
+        tries.add(Prefs.TAILSCALE_JF_URL);
+        for (String base : tries) {
+            try {
+                Net.request("GET", base + "/System/Info/Public", null, null);
+                if (!base.equals(prefs.jfUrl())) prefs.setJfUrl(base);
+                return base;
+            } catch (IOException ignored) {
+            }
+        }
+        return null;
+    }
+
     // Quick Connect
 
     JSONObject initiateQuickConnect() throws Exception {
@@ -94,6 +114,29 @@ final class Jellyfin {
         String u = prefs.jfUser();
         String q = "limit=16&includeItemTypes=Movie,Episode&groupItems=true";
         return items(get("/Items/Latest?userId=" + u + "&" + q, "/Users/" + u + "/Items/Latest?" + q));
+    }
+
+    /** Hvad der afspilles lige nu på andre skærme (kræver at brugeren er administrator for at se andres). */
+    List<Item> nowPlaying() throws Exception {
+        JSONArray arr = new JSONArray(get("/Sessions?activeWithinSeconds=90"));
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject s = arr.getJSONObject(i);
+            JSONObject np = s.optJSONObject("NowPlayingItem");
+            if (np == null || prefs.deviceId().equals(s.optString("DeviceId"))) continue;
+            Item it = item(np);
+            String where = s.optString("DeviceName", "");
+            String who = s.optString("UserName", "");
+            JSONObject ps = s.optJSONObject("PlayState");
+            boolean paused = ps != null && ps.optBoolean("IsPaused", false);
+            it.subtitle = (paused ? "Pause" : "Afspilles") + (where.isEmpty() ? "" : " på " + where) + (who.isEmpty() ? "" : " · " + who)
+                    + (np.optString("Type").equals("Episode") ? " · " + it.subtitle : "");
+            long run = np.optLong("RunTimeTicks", 0);
+            long pos = ps == null ? 0 : ps.optLong("PositionTicks", 0);
+            if (run > 0) it.progress = (int) (pos * 100 / run);
+            out.add(it);
+        }
+        return out;
     }
 
     Item randomUnwatchedMovie() throws Exception {

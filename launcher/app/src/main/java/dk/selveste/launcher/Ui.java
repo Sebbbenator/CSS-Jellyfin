@@ -20,6 +20,31 @@ final class Ui {
     static final int CARD = Color.parseColor("#CC061722");
     static final int CARD_STROKE = Color.parseColor("#334FD8FF");
 
+    /** Skrift til ur, hilsen og overskrifter; skiftes under Indstillinger > Skrifttype. */
+    static Typeface display = Typeface.create("sans-serif-light", Typeface.NORMAL);
+    static Typeface headerFace = Typeface.DEFAULT_BOLD;
+    private static String loadedFont;
+
+    static void loadFont(Context c, String key) {
+        if (key.equals(loadedFont)) return;
+        loadedFont = key;
+        try {
+            switch (key) {
+                case "orbitron":
+                    display = Typeface.createFromAsset(c.getAssets(), "fonts/Orbitron.ttf");
+                    headerFace = display;
+                    return;
+                case "rajdhani":
+                    display = Typeface.createFromAsset(c.getAssets(), "fonts/Rajdhani-Light.ttf");
+                    headerFace = Typeface.createFromAsset(c.getAssets(), "fonts/Rajdhani-Medium.ttf");
+                    return;
+            }
+        } catch (Exception ignored) {
+        }
+        display = Typeface.create("sans-serif-light", Typeface.NORMAL);
+        headerFace = Typeface.DEFAULT_BOLD;
+    }
+
     static int dp(Context c, float v) {
         return Math.round(v * c.getResources().getDisplayMetrics().density);
     }
@@ -30,7 +55,7 @@ final class Ui {
         t.setTextColor(accent);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         t.setLetterSpacing(0.25f);
-        t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setTypeface(headerFace);
         t.setPadding(0, dp(c, 22), 0, dp(c, 8));
         return t;
     }

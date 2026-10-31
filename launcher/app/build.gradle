@@ -10,8 +10,10 @@ android {
         applicationId "dk.selveste.launcher"
         minSdk 25
         targetSdk 30
-        versionCode((System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInteger())
-        versionName "1.0." + (System.getenv("GITHUB_RUN_NUMBER") ?: "0")
+        // JARVIS_VERSION sættes af workflowet (SebTV-OS fortsætter fra 100, så tal aldrig går baglæns)
+        def v = System.getenv("JARVIS_VERSION") ?: System.getenv("GITHUB_RUN_NUMBER") ?: "1"
+        versionCode v.toInteger()
+        versionName "1.0." + v
     }
 
     signingConfigs {

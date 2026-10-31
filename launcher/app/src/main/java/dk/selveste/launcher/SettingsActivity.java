@@ -29,6 +29,8 @@ public class SettingsActivity extends Activity {
     static final String PAGE_FEATURES = "features";
     static final String PAGE_BUTTONS = "buttons";
     static final String PAGE_ABOUT = "about";
+    static final String PAGE_PROFILE = "profile";
+    static final String PAGE_LOOK = "look";
 
     /** Domæner der giver mening som hurtigknap. */
     private static final List<String> BUTTON_DOMAINS = Arrays.asList(
@@ -77,10 +79,13 @@ public class SettingsActivity extends Activity {
     private void build() {
         list.removeAllViews();
         accent = prefs.accentColor();
+        Ui.loadFont(this, prefs.font());
         switch (page) {
             case PAGE_FEATURES: buildFeatures(); break;
             case PAGE_BUTTONS: buildButtons(); break;
             case PAGE_ABOUT: buildAbout(); break;
+            case PAGE_PROFILE: buildProfile(); break;
+            case PAGE_LOOK: buildLook(); break;
             default: buildMain();
         }
         View first = null;
@@ -101,9 +106,9 @@ public class SettingsActivity extends Activity {
         int c = accent;
         title("Indstillinger");
 
-        list.addView(Ui.header(this, "UDSEENDE", c));
-        list.addView(Ui.row(this, "Accentfarve", accentName(), c, v -> chooseAccent()));
-        list.addView(Ui.row(this, "Flisestørrelse", tileSizeName(), c, v -> chooseTileSize()));
+        list.addView(Ui.header(this, "DIG OG UDSEENDE", c));
+        list.addView(Ui.row(this, "Profil", prefs.profileName(), c, v -> open(PAGE_PROFILE)));
+        list.addView(Ui.row(this, "Udseende", Themes.name(prefs.theme()), c, v -> open(PAGE_LOOK)));
         list.addView(Ui.row(this, "Funktioner og rækker", countOn() + " slået til", c, v -> open(PAGE_FEATURES)));
 
         list.addView(Ui.header(this, "BAGGRUNDE", c));
@@ -129,6 +134,11 @@ public class SettingsActivity extends Activity {
         list.addView(Ui.row(this, "Home Assistant", ha ? "Forbundet" : "Indsæt token via telefonsiden", c,
                 v -> startActivity(new Intent(this, UploadActivity.class))));
         if (ha) list.addView(Ui.row(this, "Hurtigknapper", buttonCount() + " af 4 valgt", c, v -> open(PAGE_BUTTONS)));
+        if (ha) list.addView(Ui.row(this, "Jarvis besked", "Send en prøve", c, v -> {
+            if (!HomeService.testMessage("Test | Jarvis beskeder virker. Home Assistant skriver i " + JarvisMessages.ENTITY + ".")) {
+                Toast.makeText(this, "Home knap tjenesten kører ikke", Toast.LENGTH_SHORT).show();
+            }
+        }));
 
         list.addView(Ui.header(this, "APPS", c));
         Set<String> hidden = prefs.hidden();
@@ -138,6 +148,45 @@ public class SettingsActivity extends Activity {
         list.addView(Ui.header(this, "SYSTEM", c));
         list.addView(Ui.row(this, "Om Jarvis TV", "Version " + Updater.installedName(this), c, v -> open(PAGE_ABOUT)));
         list.addView(Ui.row(this, "Søg efter opdatering", "", c, v -> checkUpdate()));
+    }
+
+    private void buildProfile() {
+        int c = accent;
+        title("Profil");
+        list.addView(Ui.text(this, "Bruges til hilsenen, Jarvis stemmen og dage sammen. Kan også rettes på telefonsiden.", 16, Ui.TEXT_DIM));
+        list.addView(Ui.header(this, "PROFIL", c));
+        list.addView(Ui.row(this, "Navn", prefs.profileName(), c, v -> ask("Navn", prefs.profileName(), "Seb",
+                t -> prefs.setProfile(t, null, null, null))));
+        list.addView(Ui.row(this, "Hilsen", prefs.customGreeting().isEmpty() ? "Efter tidspunktet" : prefs.customGreeting(), c,
+                v -> ask("Egen hilsen (tom = efter tidspunktet)", prefs.customGreeting(), "Velkommen hjem, sir",
+                        t -> prefs.setProfile(null, t, null, null))));
+        list.addView(Ui.row(this, "Kæreste", prefs.partnerName().isEmpty() ? "Ikke sat" : prefs.partnerName(), c,
+                v -> ask("Kærestens navn", prefs.partnerName(), "", t -> prefs.setProfile(null, null, t, null))));
+        list.addView(Ui.row(this, "Sammen siden", prefs.togetherSinceText(), c,
+                v -> ask("Sammen siden (åååå-mm-dd)", prefs.togetherSinceText(), "2026-01-04", t -> {
+                    if (!t.trim().matches("\\d{4}-\\d{2}-\\d{2}")) {
+                        Toast.makeText(this, "Skriv datoen som 2026-01-04", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    prefs.setProfile(null, null, null, t);
+                })));
+        list.addView(Ui.row(this, "Profilbillede", ProfilePicture.file(this).exists() ? "Sat, skift via telefonen" : "Læg op via telefonen", c,
+                v -> startActivity(new Intent(this, UploadActivity.class))));
+
+    }
+
+    private void buildLook() {
+        int c = accent;
+        title("Udseende");
+        list.addView(Ui.header(this, "TEMA", c));
+        list.addView(Ui.row(this, "Tema", Themes.name(prefs.theme()), c, v -> chooseTheme()));
+        list.addView(Ui.header(this, "ENKELTVIS", c));
+        list.addView(Ui.row(this, "Ur", pick(Prefs.CLOCKS, prefs.clockStyle()), c,
+                v -> choose("Ur", Prefs.CLOCKS, prefs.clockStyle(), prefs::setClockStyle)));
+        list.addView(Ui.row(this, "Skrifttype", pick(Prefs.FONTS, prefs.font()), c,
+                v -> choose("Skrifttype", Prefs.FONTS, prefs.font(), prefs::setFont)));
+        list.addView(Ui.row(this, "Accentfarve", accentName(), c, v -> chooseAccent()));
+        list.addView(Ui.row(this, "Flisestørrelse", tileSizeName(), c, v -> chooseTileSize()));
     }
 
     private void buildFeatures() {
@@ -222,7 +271,8 @@ public class SettingsActivity extends Activity {
         list.addView(Ui.row(this, "Søg efter opdatering", "", c, v -> checkUpdate()));
         list.addView(Ui.header(this, "TILSTAND", c));
         list.addView(Ui.row(this, "Home knap", HomeService.isRunning() ? "Aktiv" : "Ikke aktiv, kør install scriptet", c, v -> { }));
-        list.addView(Ui.row(this, "Jellyfin", new Jellyfin(prefs).configured() ? "Forbundet" : "Ikke forbundet", c, v -> { }));
+        list.addView(Ui.row(this, "Jellyfin", new Jellyfin(prefs).configured() ? "Forbundet via " + prefs.jfUrl() : "Ikke forbundet", c, v -> { }));
+        list.addView(Ui.row(this, "Natlig opdatering", Features.on(prefs, Features.NIGHT_UPDATE) ? "Kl. ca. 4" : "Fra", c, v -> { }));
         list.addView(Ui.row(this, "Home Assistant", new HomeAssistant(prefs).configured() ? "Forbundet" : "Ikke forbundet", c, v -> { }));
         String crash = prefs.lastCrash();
         list.addView(Ui.row(this, "Seneste fejl", crash.isEmpty() ? "Ingen" : "Vis", c, v -> {
@@ -276,9 +326,77 @@ public class SettingsActivity extends Activity {
                 .setTitle("Accentfarve")
                 .setSingleChoiceItems(names, checked, (d, which) -> {
                     prefs.setAccentKey(Prefs.ACCENTS[which][0]);
+                    prefs.setTheme("");
                     d.dismiss();
                     build();
                 })
+                .show();
+    }
+
+    interface Setter {
+        void set(String value);
+    }
+
+    private static String pick(String[][] options, String key) {
+        for (String[] o : options) if (o[0].equals(key)) return o[1];
+        return options[0][1];
+    }
+
+    private void choose(String title, String[][] options, String current, Setter setter) {
+        String[] names = new String[options.length];
+        int checked = 0;
+        for (int i = 0; i < names.length; i++) {
+            names[i] = options[i][1];
+            if (options[i][0].equals(current)) checked = i;
+        }
+        new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(title)
+                .setSingleChoiceItems(names, checked, (d, which) -> {
+                    setter.set(options[which][0]);
+                    prefs.setTheme("");
+                    d.dismiss();
+                    build();
+                })
+                .show();
+    }
+
+    private void chooseTheme() {
+        String[] names = new String[Themes.ALL.length];
+        int checked = -1;
+        for (int i = 0; i < names.length; i++) {
+            names[i] = Themes.ALL[i][1] + "  ·  " + Themes.ALL[i][2];
+            if (Themes.ALL[i][0].equals(prefs.theme())) checked = i;
+        }
+        new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle("Tema")
+                .setSingleChoiceItems(names, checked, (d, which) -> {
+                    Themes.apply(prefs, Themes.ALL[which][0]);
+                    d.dismiss();
+                    Toast.makeText(this, Themes.ALL[which][1] + " er sat. Alt kan stadig rettes enkeltvis.", Toast.LENGTH_SHORT).show();
+                    build();
+                })
+                .show();
+    }
+
+    /** Tekstfelt med fjernbetjeningens tastatur. Tryk Gem for at gemme. */
+    private void ask(String title, String current, String hint, Setter setter) {
+        android.widget.EditText input = new android.widget.EditText(this);
+        input.setSingleLine(true);
+        input.setText(current);
+        input.setHint(hint);
+        input.setSelection(input.getText().length());
+        android.widget.FrameLayout box = new android.widget.FrameLayout(this);
+        int pad = Ui.dp(this, 24);
+        box.setPadding(pad, Ui.dp(this, 8), pad, 0);
+        box.addView(input);
+        new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(title)
+                .setView(box)
+                .setPositiveButton("Gem", (d, w) -> {
+                    setter.set(input.getText().toString());
+                    build();
+                })
+                .setNegativeButton("Annullér", null)
                 .show();
     }
 
@@ -293,6 +411,7 @@ public class SettingsActivity extends Activity {
                 .setTitle("Flisestørrelse")
                 .setSingleChoiceItems(names, checked, (d, which) -> {
                     prefs.setTileSize(Prefs.TILE_SIZES[which][0]);
+                    prefs.setTheme("");
                     d.dismiss();
                     build();
                 })
@@ -345,7 +464,11 @@ public class SettingsActivity extends Activity {
 
     private void quickConnect() {
         Jellyfin jf = new Jellyfin(prefs);
-        Net.async(jf::initiateQuickConnect, (res, err) -> {
+        Net.async(() -> {
+            // Hjemme: LAN adressen. Ude (fx kærestens stick): samme server over Tailscale
+            if (jf.findServer() == null) throw new java.io.IOException("ingen server svarer på LAN eller Tailscale");
+            return jf.initiateQuickConnect();
+        }, (res, err) -> {
             if (err != null || res == null) {
                 Toast.makeText(this, "Kunne ikke nå Jellyfin: " + (err == null ? "" : err.getMessage()), Toast.LENGTH_LONG).show();
                 return;

@@ -61,14 +61,14 @@ public class MainActivity extends Activity {
 
     private static final Locale DANISH = new Locale("da", "DK");
     private static final String WHOLPHIN = "com.github.damontecres.wholphin";
+    private static final String MODES_ENTITY = "input_select.vaerelset";
     private static final int[] KONAMI = {KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
             KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT};
-    /** Dagen I blev kærester. */
-    private static final int[] TOGETHER_SINCE = {2026, Calendar.JANUARY, 4};
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", DANISH);
+    private final SimpleDateFormat secondsFormat = new SimpleDateFormat("HH:mm:ss", DANISH);
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE d. MMMM", DANISH);
     private final LruCache<String, Bitmap> images = new LruCache<>(48);
 
@@ -83,12 +83,18 @@ public class MainActivity extends Activity {
     private ObjectAnimator kenBurns;
     private ParticleView particles;
     private TextView clock;
+    private ClockRingView clockRing;
+    private ImageView avatar;
+    private String appliedLook;
+    private long lastNowPlaying;
+    private String nowPlayingIds = "";
     private TextView date;
     private TextView greeting;
     private TextView together;
     private TextView status;
     private ScrollView scroller;
-    private LinearLayout sectionResume, sectionApps, sectionHa, sectionLatest, sectionTools, sectionRest;
+    private LinearLayout sectionNowPlaying, sectionResume, sectionApps, sectionModes, sectionHa, sectionLatest, sectionUpcoming,
+            sectionTools, sectionRest;
     private FrameLayout bgFrame;
     private LinearLayout column;
     private TextView ambientClock;
@@ -111,8 +117,10 @@ public class MainActivity extends Activity {
         public void run() {
             Date now = new Date();
             String hm = timeFormat.format(now);
-            boolean newMinute = set(clock, hm);
+            boolean newMinute = !hm.contentEquals(nightClock.getText());
             set(nightClock, hm);
+            set(clock, "sekunder".equals(prefs.clockStyle()) ? secondsFormat.format(now) : hm);
+            if (clockRing.getVisibility() == View.VISIBLE && !ambient) clockRing.invalidate();
             updateNight();
             if (newMinute) {
                 String d = dateFormat.format(now);
@@ -122,6 +130,7 @@ public class MainActivity extends Activity {
                 if (Prefs.BG_HOURLY.equals(prefs.bgMode()) || Prefs.BG_DAILY.equals(prefs.bgMode())) loadBackground(false);
             }
             if (System.currentTimeMillis() - lastRemoteRefresh > 5 * 60 * 1000) refreshRemote();
+            else if (System.currentTimeMillis() - lastNowPlaying > 45 * 1000) refreshNowPlaying();
             handler.postDelayed(this, 1000 - (System.currentTimeMillis() % 1000));
         }
     };
@@ -163,7 +172,10 @@ public class MainActivity extends Activity {
         ha = new HomeAssistant(prefs);
         jf = new Jellyfin(prefs);
         installCrashHandler(this);
+        Ui.loadFont(this, prefs.font());
         setContentView(buildLayout());
+        applyLook();
+        NightUpdate.schedule(this);
         wokeUp = true;
         IntentFilter pkgFilter = new IntentFilter();
         pkgFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
@@ -184,6 +196,7 @@ public class MainActivity extends Activity {
             // Indstillinger kan have ændret accentfarve eller fliser: læs baggrund og farve igen
             shownBackground = null;
             accent = prefs.accentColor();
+            applyLook();
             backgrounds.importShared();
             loadBackground(false);
             refreshApps();
@@ -285,9 +298,11 @@ public class MainActivity extends Activity {
         left.setOrientation(LinearLayout.VERTICAL);
         top.addView(left, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         clock = Ui.text(this, "", 64, Ui.TEXT);
-        clock.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
         clock.setIncludeFontPadding(false);
         left.addView(clock);
+        clockRing = new ClockRingView(this);
+        clockRing.setVisibility(View.GONE);
+        left.addView(clockRing, new LinearLayout.LayoutParams(dp(150), dp(150)));
         date = Ui.text(this, "", 18, Ui.TEXT_DIM);
         date.setLetterSpacing(0.08f);
         left.addView(date);
@@ -295,8 +310,21 @@ public class MainActivity extends Activity {
         LinearLayout right = new LinearLayout(this);
         right.setOrientation(LinearLayout.VERTICAL);
         right.setGravity(Gravity.END);
-        right.setPadding(0, dp(8), dp(56), 0);
+        right.setPadding(0, dp(8), dp(24), 0);
         top.addView(right);
+        avatar = new ImageView(this);
+        avatar.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        avatar.setClipToOutline(true);
+        avatar.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(View v, android.graphics.Outline o) {
+                o.setOval(0, 0, v.getWidth(), v.getHeight());
+            }
+        });
+        avatar.setVisibility(View.GONE);
+        LinearLayout.LayoutParams avp = new LinearLayout.LayoutParams(dp(72), dp(72));
+        avp.setMargins(0, dp(8), dp(56), 0);
+        top.addView(avatar, avp);
         greeting = Ui.text(this, "", 22, Ui.TEXT);
         greeting.setGravity(Gravity.END);
         right.addView(greeting);
@@ -319,15 +347,17 @@ public class MainActivity extends Activity {
         rows.setOrientation(LinearLayout.VERTICAL);
         rows.setGravity(Gravity.BOTTOM);
         scroller.addView(rows, new ScrollView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        sectionNowPlaying = section(rows);
         sectionResume = section(rows);
         sectionApps = section(rows);
+        sectionModes = section(rows);
         sectionHa = section(rows);
         sectionLatest = section(rows);
+        sectionUpcoming = section(rows);
         sectionTools = section(rows);
         sectionRest = section(rows);
 
         ambientClock = Ui.text(this, "", 44, Ui.TEXT);
-        ambientClock.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
         ambientClock.setShadowLayer(dp(10), 0, 0, Color.BLACK);
         ambientClock.setAlpha(0f);
         FrameLayout.LayoutParams acp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -344,6 +374,32 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
         root.addView(night, match());
         return root;
+    }
+
+    /** Skrift, ur stil og profilbillede fra indstillingerne. */
+    private void applyLook() {
+        Ui.loadFont(this, prefs.font());
+        String look = prefs.font() + "|" + prefs.clockStyle() + "|" + ProfilePicture.file(this).lastModified();
+        clockRing.setColor(currentAccent());
+        if (look.equals(appliedLook)) return;
+        appliedLook = look;
+        String style = prefs.clockStyle();
+        boolean ring = "hud".equals(style);
+        clock.setVisibility(ring ? View.GONE : View.VISIBLE);
+        clockRing.setVisibility(ring ? View.VISIBLE : View.GONE);
+        Typeface thin = "system".equals(prefs.font()) ? Typeface.create("sans-serif-thin", Typeface.NORMAL) : Ui.display;
+        clock.setTypeface("tynd".equals(style) ? thin : Ui.display);
+        clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, "tynd".equals(style) ? 96 : "sekunder".equals(style) ? 56 : 64);
+        clock.setFontFeatureSettings("tnum");
+        clock.setText("");
+        greeting.setTypeface(Ui.display);
+        date.setTypeface(Ui.display);
+        ambientClock.setTypeface(Ui.display);
+        nightClock.setTypeface("system".equals(prefs.font()) ? Typeface.create("sans-serif-thin", Typeface.NORMAL) : Ui.display);
+        Net.async(() -> ProfilePicture.load(this), (bmp, err) -> {
+            avatar.setImageBitmap(bmp);
+            avatar.setVisibility(bmp == null ? View.GONE : View.VISIBLE);
+        });
     }
 
     private LinearLayout section(LinearLayout parent) {
@@ -579,6 +635,7 @@ public class MainActivity extends Activity {
 
     private void refreshRemote() {
         lastRemoteRefresh = System.currentTimeMillis();
+        refreshNowPlaying();
         if (jf.configured()) {
             if (Features.on(prefs, Features.RESUME)) {
                 boolean nextUp = Features.on(prefs, Features.NEXT_UP);
@@ -591,7 +648,11 @@ public class MainActivity extends Activity {
                         }
                     }
                     return items;
-                }, (items, err) -> fillMedia(sectionResume, "FORTSÆT AT SE", items, true));
+                }, (items, err) -> {
+                    fillMedia(sectionResume, "FORTSÆT AT SE", items, true);
+                    // Serveren svarer ikke på den gemte adresse: prøv LAN og Tailscale til næste gang
+                    if (err instanceof java.io.IOException) Net.async(jf::findServer, null);
+                });
             } else sectionResume.removeAllViews();
             if (Features.on(prefs, Features.LATEST)) {
                 Net.async(jf::latest, (items, err) -> fillMedia(sectionLatest, "NYT PÅ SERVEREN", items, false));
@@ -600,20 +661,129 @@ public class MainActivity extends Activity {
             sectionResume.removeAllViews();
             sectionLatest.removeAllViews();
         }
-        if (ha.configured() && (Features.on(prefs, Features.HA_STATUS) || Features.on(prefs, Features.HA_BUTTONS))) {
+        if (ha.configured() && (Features.on(prefs, Features.HA_STATUS) || Features.on(prefs, Features.HA_BUTTONS)
+                || Features.on(prefs, Features.MODES))) {
             Net.async(ha::states, (states, err) -> {
                 if (states == null) {
                     status.setText(err == null ? "" : "Home Assistant svarer ikke");
                     sectionHa.removeAllViews();
+                    sectionModes.removeAllViews();
                     return;
                 }
                 fillStatus(states);
+                fillModes(states);
                 fillHaButtons(states);
             });
         } else {
             status.setText("");
             sectionHa.removeAllViews();
+            sectionModes.removeAllViews();
         }
+        if (ha.configured() && Features.on(prefs, Features.UPCOMING)) {
+            Net.async(ha::upcoming, (list, err) -> fillUpcoming(list));
+        } else {
+            sectionUpcoming.removeAllViews();
+        }
+    }
+
+    private void refreshNowPlaying() {
+        lastNowPlaying = System.currentTimeMillis();
+        if (!jf.configured() || !Features.on(prefs, Features.NOW_PLAYING)) {
+            sectionNowPlaying.removeAllViews();
+            nowPlayingIds = "";
+            return;
+        }
+        Net.async(jf::nowPlaying, (items, err) -> {
+            if (items == null) return;
+            // Rækken bygges kun om, når noget nyt starter eller stopper, så fokus ikke hopper
+            StringBuilder ids = new StringBuilder();
+            for (Jellyfin.Item it : items) ids.append(it.id).append(it.subtitle).append(it.progress / 5).append(',');
+            if (ids.toString().equals(nowPlayingIds)) return;
+            nowPlayingIds = ids.toString();
+            fillMedia(sectionNowPlaying, "AFSPILLES NU", items, true);
+        });
+    }
+
+    /** Tilstande: én flise pr. valg i input_select.vaerelset; den aktive lyser i accentfarven. */
+    private void fillModes(Map<String, JSONObject> states) {
+        JSONObject st = states.get(MODES_ENTITY);
+        JSONObject attrs = st == null ? null : st.optJSONObject("attributes");
+        JSONArray options = attrs == null ? null : attrs.optJSONArray("options");
+        if (!Features.on(prefs, Features.MODES) || options == null || options.length() == 0) {
+            sectionModes.removeAllViews();
+            return;
+        }
+        String focusedKey = focusedKey();
+        String active = st.optString("state");
+        LinearLayout row = startRow(sectionModes, "TILSTANDE");
+        for (int i = 0; i < options.length(); i++) {
+            String option = options.optString(i);
+            boolean on = option.equals(active);
+            FrameLayout[] out = new FrameLayout[1];
+            LinearLayout holder = tile("mode:" + option, dp(150), dp(56), "", null, out);
+            FrameLayout card = out[0];
+            if (on) card.setBackground(Ui.card(this, HudView.withAlpha(currentAccent(), 0.30f), currentAccent(), 2));
+            TextView t = Ui.text(this, option, 17, on ? Ui.TEXT : Ui.TEXT_DIM);
+            t.setTypeface(on ? Ui.headerFace : Typeface.DEFAULT);
+            t.setGravity(Gravity.CENTER);
+            t.setSingleLine(true);
+            card.addView(t, match());
+            card.setOnClickListener(v -> {
+                if (on) return;
+                t.setText("...");
+                Net.async(() -> {
+                    ha.selectOption(MODES_ENTITY, option);
+                    return true;
+                }, (ok, err) -> {
+                    if (err != null) Toast.makeText(this, "HA: " + err.getMessage(), Toast.LENGTH_SHORT).show();
+                    handler.postDelayed(this::refreshRemote, 600);
+                });
+            });
+            row.addView(holder);
+        }
+        restoreFocus(focusedKey);
+    }
+
+    private void fillUpcoming(List<HomeAssistant.Upcoming> list) {
+        if (list == null || list.isEmpty()) {
+            sectionUpcoming.removeAllViews();
+            return;
+        }
+        String focusedKey = focusedKey();
+        LinearLayout row = startRow(sectionUpcoming, "KOMMER SNART");
+        SimpleDateFormat day = new SimpleDateFormat("EEEE d/M", DANISH);
+        for (HomeAssistant.Upcoming u : list) {
+            FrameLayout[] out = new FrameLayout[1];
+            LinearLayout holder = tile("up:" + u.title + u.when, dp(220), dp(84), "", null, out);
+            FrameLayout card = out[0];
+            LinearLayout inner = new LinearLayout(this);
+            inner.setOrientation(LinearLayout.VERTICAL);
+            inner.setPadding(dp(14), dp(10), dp(14), dp(10));
+            TextView w = Ui.text(this, whenText(u.when, day).toUpperCase(DANISH), 12, currentAccent());
+            w.setTypeface(Ui.headerFace);
+            w.setLetterSpacing(0.12f);
+            inner.addView(w);
+            TextView t = Ui.text(this, u.title, 16, Ui.TEXT);
+            t.setSingleLine(true);
+            inner.addView(t);
+            TextView d = Ui.text(this, u.detail, 13, Ui.TEXT_DIM);
+            d.setSingleLine(true);
+            inner.addView(d);
+            card.addView(inner, match());
+            row.addView(holder);
+        }
+        restoreFocus(focusedKey);
+    }
+
+    private static String whenText(long when, SimpleDateFormat day) {
+        Calendar today = Calendar.getInstance();
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(when);
+        int diff = c.get(Calendar.DAY_OF_YEAR) - today.get(Calendar.DAY_OF_YEAR)
+                + 365 * (c.get(Calendar.YEAR) - today.get(Calendar.YEAR));
+        if (diff <= 0) return "I dag";
+        if (diff == 1) return "I morgen";
+        return day.format(c.getTime());
     }
 
     private void fillMedia(LinearLayout section, String title, List<Jellyfin.Item> items, boolean progress) {
@@ -741,7 +911,14 @@ public class MainActivity extends Activity {
             s.setSingleLine(true);
             inner.addView(s);
             card.addView(inner, match());
+            JSONObject attrs = st.optJSONObject("attributes");
+            JSONArray options = attrs == null ? null : attrs.optJSONArray("options");
+            if (options != null) s.setTextColor(currentAccent());
             card.setOnClickListener(v -> {
+                if (options != null && options.length() > 0) {
+                    chooseOption(id, name, options, st.optString("state"));
+                    return;
+                }
                 s.setText("...");
                 Net.async(() -> {
                     ha.press(id);
@@ -754,6 +931,29 @@ public class MainActivity extends Activity {
             row.addView(holder);
         }
         restoreFocus(focusedKey);
+    }
+
+    /** Valglister (fx tilstande) åbner en liste med det aktive valg markeret. */
+    private void chooseOption(String id, String name, JSONArray options, String active) {
+        String[] names = new String[options.length()];
+        int checked = -1;
+        for (int i = 0; i < names.length; i++) {
+            names[i] = options.optString(i);
+            if (names[i].equals(active)) checked = i;
+        }
+        new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle(name)
+                .setSingleChoiceItems(names, checked, (d, which) -> {
+                    d.dismiss();
+                    Net.async(() -> {
+                        ha.selectOption(id, names[which]);
+                        return true;
+                    }, (ok, err) -> {
+                        if (err != null) Toast.makeText(this, "HA: " + err.getMessage(), Toast.LENGTH_SHORT).show();
+                        handler.postDelayed(this::refreshRemote, 600);
+                    });
+                })
+                .show();
     }
 
     private static String stateDa(String s) {
@@ -825,8 +1025,11 @@ public class MainActivity extends Activity {
 
     private String greetingText() {
         int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        String custom = prefs.customGreeting();
+        if (!custom.isEmpty()) return custom;
         String g = h < 5 ? "Godnat" : h < 10 ? "Godmorgen" : h < 17 ? "Goddag" : h < 23 ? "Godaften" : "Godnat";
-        return g + ", Seb";
+        String name = prefs.profileName();
+        return name.isEmpty() ? g : g + ", " + name;
     }
 
     private void updateGreeting() {
@@ -835,9 +1038,10 @@ public class MainActivity extends Activity {
             set(together, "");
             return;
         }
+        int[] since = prefs.togetherSince();
         Calendar start = Calendar.getInstance();
         start.clear();
-        start.set(TOGETHER_SINCE[0], TOGETHER_SINCE[1], TOGETHER_SINCE[2]);
+        start.set(since[0], since[1], since[2]);
         Calendar today = Calendar.getInstance();
         Calendar todayMidnight = Calendar.getInstance();
         todayMidnight.clear();
@@ -846,10 +1050,10 @@ public class MainActivity extends Activity {
 
         Calendar anniversary = Calendar.getInstance();
         anniversary.clear();
-        anniversary.set(today.get(Calendar.YEAR), TOGETHER_SINCE[1], TOGETHER_SINCE[2]);
+        anniversary.set(today.get(Calendar.YEAR), since[1], since[2]);
         if (anniversary.before(todayMidnight)) anniversary.add(Calendar.YEAR, 1);
         long toAnniversary = Math.round((anniversary.getTimeInMillis() - todayMidnight.getTimeInMillis()) / (double) TimeUnit.DAYS.toMillis(1));
-        int years = anniversary.get(Calendar.YEAR) - TOGETHER_SINCE[0];
+        int years = anniversary.get(Calendar.YEAR) - since[0];
         long nextHundred = (days / 100 + 1) * 100;
         long toHundred = nextHundred - days;
 
@@ -858,7 +1062,13 @@ public class MainActivity extends Activity {
         else if (days % 100 == 0 && days > 0) extra = "I dag: " + days + " dage!";
         else if (toHundred <= toAnniversary) extra = nextHundred + " dage " + when(toHundred);
         else extra = years + " år " + when(toAnniversary);
-        set(together, "♥ " + days + " dage sammen  ·  " + extra);
+        String partner = prefs.partnerName();
+        String who = partner.isEmpty() ? "" : " med " + partner;
+        if (days < 0) {
+            set(together, "");
+            return;
+        }
+        set(together, "♥ " + days + " dage sammen" + who + "  ·  " + extra);
     }
 
     private static String when(long days) {
@@ -921,7 +1131,8 @@ public class MainActivity extends Activity {
         if (System.currentTimeMillis() - prefs.lastGreeting() < 2 * 60 * 60 * 1000) return;
         prefs.setLastGreeting(System.currentTimeMillis());
         String part = h < 10 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-        String message = part + ", Seb. All systems online.";
+        String name = prefs.profileName();
+        String message = part + (name.isEmpty() ? "" : ", " + name) + ". All systems online.";
         Net.async(() -> {
             String engine = null;
             for (String id : ha.states().keySet()) {
@@ -1062,9 +1273,17 @@ public class MainActivity extends Activity {
 
     /** Viser release noterne for en version, hentet fra GitHub. */
     static void showChangelog(Activity a, int version) {
-        Net.async(() -> new JSONObject(Net.request("GET",
-                "https://api.github.com/repos/Sebbbenator/CSS-Jellyfin/releases/tags/launcher-v" + version, null, null))
-                .optString("body", ""), (body, err) -> {
+        Net.async(() -> {
+            try {
+                return new JSONObject(Net.request("GET",
+                        "https://api.github.com/repos/" + Updater.REPO + "/releases/tags/launcher-v" + version, null, null))
+                        .optString("body", "");
+            } catch (java.io.IOException e) {
+                return new JSONObject(Net.request("GET",
+                        "https://api.github.com/repos/" + Updater.OLD_REPO + "/releases/tags/launcher-v" + version, null, null))
+                        .optString("body", "");
+            }
+        }, (body, err) -> {
             if (a.isFinishing()) return;
             if (body == null || body.trim().isEmpty()) {
                 if (err != null) Toast.makeText(a, "Kunne ikke hente noterne", Toast.LENGTH_SHORT).show();

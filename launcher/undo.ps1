@@ -5,6 +5,10 @@ $ErrorActionPreference = 'Continue'
 $adb = "$env:USERPROFILE\platform-tools\adb.exe"
 $tv = '192.168.111.5:5555'
 $saved = "$env:USERPROFILE\tv-launcher\accessibility-foer.txt"
+if ($env:JARVIS_TV) {
+    $tv = $env:JARVIS_TV; if ($tv -notmatch ':') { $tv = "$($tv):5555" }
+    $saved = "$env:USERPROFILE\tv-launcher\accessibility-foer-$($tv -replace '[:.]', '-').txt"
+}
 
 & $adb connect $tv | Out-Host
 $old = ''

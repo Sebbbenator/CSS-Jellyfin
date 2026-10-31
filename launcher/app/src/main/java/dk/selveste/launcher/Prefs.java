@@ -20,6 +20,8 @@ final class Prefs {
 
     static final String DEFAULT_HA_URL = "http://192.168.111.25:8123";
     static final String DEFAULT_JF_URL = "http://192.168.111.25:8096";
+    /** Samme server over Tailscale, til sticks uden for huset (fx kærestens). */
+    static final String TAILSCALE_JF_URL = "http://100.84.70.72:8096";
     static final String DEFAULT_HA_BUTTONS = "switch.lys_sync,input_select.vaerelset,light.sebbe_bordlampe";
 
     /** Accentfarver: nøgle, navn, farve. "auto" tager farven fra baggrunden. */
@@ -154,6 +156,10 @@ final class Prefs {
         return sp.getString("jf_user", "");
     }
 
+    void setJfUrl(String url) {
+        sp.edit().putString("jf_url", url).apply();
+    }
+
     void setJellyfin(String url, String token, String user) {
         sp.edit().putString("jf_url", url).putString("jf_token", token).putString("jf_user", user).apply();
     }
@@ -206,6 +212,95 @@ final class Prefs {
 
     void setHaButtons(List<String> ids) {
         sp.edit().putString("ha_buttons", String.join(",", ids)).apply();
+    }
+
+    // Profil
+
+    /** Standard er Seb; en anden stick (fx kærestens) skifter det under Indstillinger > Profil. */
+    String profileName() {
+        return sp.getString("profile_name", "Seb");
+    }
+
+    /** Egen hilsen; tom = Godmorgen/Goddag/Godaften efter tidspunktet. */
+    String customGreeting() {
+        return sp.getString("profile_greeting", "");
+    }
+
+    String partnerName() {
+        return sp.getString("profile_partner", "");
+    }
+
+    /** Dagen I blev kærester som {år, måned (0-11), dag}. */
+    int[] togetherSince() {
+        String raw = sp.getString("profile_together", "2026-01-04");
+        try {
+            String[] p = raw.split("-");
+            return new int[]{Integer.parseInt(p[0]), Integer.parseInt(p[1]) - 1, Integer.parseInt(p[2])};
+        } catch (Exception e) {
+            return new int[]{2026, 0, 4};
+        }
+    }
+
+    String togetherSinceText() {
+        return sp.getString("profile_together", "2026-01-04");
+    }
+
+    void setProfile(String name, String greeting, String partner, String together) {
+        SharedPreferences.Editor e = sp.edit();
+        if (name != null) e.putString("profile_name", name.trim());
+        if (greeting != null) e.putString("profile_greeting", greeting.trim());
+        if (partner != null) e.putString("profile_partner", partner.trim());
+        if (together != null && together.trim().matches("\\d{4}-\\d{2}-\\d{2}")) e.putString("profile_together", together.trim());
+        e.apply();
+    }
+
+    // Ur, skrift og tema
+
+    static final String[][] CLOCKS = {
+            {"stor", "Stor"},
+            {"tynd", "Stor og tynd"},
+            {"hud", "Jarvis ring med sekunder"},
+            {"sekunder", "Digital med sekunder"},
+    };
+
+    static final String[][] FONTS = {
+            {"system", "Standard"},
+            {"orbitron", "Orbitron (HUD)"},
+            {"rajdhani", "Rajdhani (smal)"},
+    };
+
+    String clockStyle() {
+        return sp.getString("clock_style", "stor");
+    }
+
+    void setClockStyle(String key) {
+        sp.edit().putString("clock_style", key).apply();
+    }
+
+    String font() {
+        return sp.getString("font", "system");
+    }
+
+    void setFont(String key) {
+        sp.edit().putString("font", key).apply();
+    }
+
+    String theme() {
+        return sp.getString("theme", "");
+    }
+
+    void setTheme(String key) {
+        sp.edit().putString("theme", key).apply();
+    }
+
+    // Jarvis beskeder
+
+    String lastMessageStamp() {
+        return sp.getString("last_message", "");
+    }
+
+    void setLastMessageStamp(String stamp) {
+        sp.edit().putString("last_message", stamp).apply();
     }
 
     // Version og fejl

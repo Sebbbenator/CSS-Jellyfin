@@ -1,13 +1,13 @@
 # Laver Jarvis TV's faste signeringsnoegle EN gang og hjaelper med at gemme den som GitHub secrets.
 # Noeglen forlader kun pc'en via dit eget udklipsholder til GitHub. Den ligger aldrig i repoet.
-# Koer:  irm https://github.com/sebbbenator/css-jellyfin/releases/latest/download/lav-noegle.ps1 | iex
+# Koer:  irm https://raw.githubusercontent.com/Sebbbenator/SebTV-OS/main/lav-noegle.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
 $dir = "$env:USERPROFILE\tv-launcher"
 New-Item -ItemType Directory -Force $dir | Out-Null
 $p12 = "$dir\jarvis-tv-noegle.p12"
 $passFile = "$dir\jarvis-tv-noegle-kode.txt"
-$url = 'https://github.com/Sebbbenator/CSS-Jellyfin/settings/secrets/actions/new'
+$url = 'https://github.com/Sebbbenator/SebTV-OS/settings/secrets/actions/new'
 
 if (Test-Path $p12) {
     Write-Host "Noeglen findes allerede i $p12, bruger den." -ForegroundColor Yellow
